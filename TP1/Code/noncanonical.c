@@ -74,24 +74,25 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-	int i = 0;
-	char message[255];
+    int i = 0;
+    char message[255];
 
     while (STOP==FALSE) {       /* loop for input */
-      res = read(fd,buf,1);   /* returns after 1 char have been input */
+      res = read(fd,buf,1);     /* returns after 1 char have been input */
       buf[res]=0;               /* so we can printf... */
-      printf(":%s:%d\n", buf, res);
-	message[i] = buf[0];
-	i++;
+      printf("%s:%d\n", buf, res);
+	    message[i] = buf[0];
+	    i++;
       if (buf[0]=='\0') STOP=TRUE;
     }
-	int j;
-	for(j = 0; j < strlen(message) - 1; j++)
+
+	  int j;
+    for(j = 0; j < strlen(message); j++)
 		printf("%c", message[j]);
 
-	write(fd, message, strlen(message));
+    sleep(2);
 
-	sleep(2);
+    write(fd, message, strlen(message));
 
     tcsetattr(fd,TCSANOW,&oldtio);
     close(fd);

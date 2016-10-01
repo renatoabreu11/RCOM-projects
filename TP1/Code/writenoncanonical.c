@@ -5,6 +5,10 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <string.h>
+#include <unistd.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -54,14 +58,10 @@ int main(int argc, char** argv)
     newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
     newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
 
-
-
   /* 
     VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a 
     leitura do(s) próximo(s) caracter(es)
   */
-
-
 
     tcflush(fd, TCIOFLUSH);
 
@@ -72,34 +72,25 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-
-
-    for (i = 0; i < 255; i++) {
-      buf[i] = 'a';
+    size_t len;
+    if(fgets(buf, sizeof(buf), stdin) != NULL){
+      len = strlen(buf);
+      printf("input: %s", buf); 
+      printf("string length: %zu\n", len);
     }
+
+    write(fd, buf, len);
+
+    sleep(2);
     
-    /*testing*/
-    buf[25] = '\n';
-    
-    res = write(fd,buf,255);   
-    printf("%d bytes written\n", res);
- 
-
-  /* 
-    O ciclo FOR e as instruções seguintes devem ser alterados de modo a respeitar 
-    o indicado no guião 
-  */
-
-
-
+    char message[255];
+    read(fd, message, 255);
+    printf("String received: %s", message);
    
     if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
       perror("tcsetattr");
       exit(-1);
     }
-
-
-
 
     close(fd);
     return 0;
