@@ -14,11 +14,34 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
+#define F 0x7e
+#define A 0x03
+#define C_SET 0x03
+#define C 0x07
 
 volatile int STOP=FALSE;
 
+typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop}setState;
+
 int main(int argc, char** argv)
 {
+	unsigned char SET[5];
+	SET[0] = F;
+	SET[1] = A;
+ 	SET[2] = C_SET;
+	SET[3] = SET[1] ^ SET[2];
+	SET[4] = F;
+
+	unsigned char UA[5];
+	UA[0] = F;
+	UA[1] = A;
+ 	UA[2] = C;
+	UA[3] = UA[1] ^ UA[2];
+	UA[4] = F;
+
+	unsigned char BCC1 = SET[1] ^ SET[2];
+	unsigned char BCC2 = UA[1] ^ UA[2];
+
     int fd,c, res;
     struct termios oldtio,newtio;
     char buf[255];
@@ -63,9 +86,8 @@ int main(int argc, char** argv)
     leitura do(s) próximo(s) caracter(es)
   */
 
-
-
     tcflush(fd, TCIOFLUSH);
+
 
     if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
       perror("tcsetattr");
@@ -74,21 +96,62 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
+	int connected = 0;
+	setState current = start;
+
     int i = 0;
     char message[255];
 
     while (STOP==FALSE) {       /* loop for input */
       res = read(fd,buf,1);     /* returns after 1 char have been input */
       buf[res]=0;               /* so we can printf... */
-      printf("%s:%d\n", buf, res);
-	    message[i] = buf[0];
-	    i++;
-      if (buf[0]=='\0') STOP=TRUE;
+
+	if(connected == 0) 
+	switch(current){
+		case start: if(buf[0] == F)
+						current = flagRCV;
+					break;
+		case flagRCV:
+					if(buf[0] == A)
+						current = aRCV;
+					else if(buf[0] != F)
+						current = start;
+				 						break;
+		case aRCV:	if(buf[0] == C_SET)
+						current = BCC;
+					else if(buf[0] != F)
+						current = start;
+					else 
+						current = flagRCV;
+					break;
+		case cRCV:	if(buf[0]) == BCC1)
+						current = BCC;
+					else if(buf[0 != F)
+						current = start;
+					else
+						current = flagRCV;
+					break;
+		case BCC:	if(buf[0] == F)
+						current = stop;
+					else
+						current = start;
+					break;
+		case stop:	connected = 1;
+					break;
+		default: break;
+		}	
+
+	else {
+     if (buf[0]=='\n') STOP=TRUE;
+	else{
+	 printf("%s:%d\n", buf, res);
+	  message[i] = buf[0];
+	  i++;
+		}
+}
     }
 
-	  int j;
-    for(j = 0; j < strlen(message); j++)
-		printf("%c", message[j]);
+	printf("%s\n", message);
 
     sleep(2);
 
