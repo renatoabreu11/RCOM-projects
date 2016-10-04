@@ -26,8 +26,7 @@ volatile int STOP=FALSE;
 int timer = 1, flag = 1;
 typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop}uaState;
 
-void atende()                   {
-	printf("alarme # %d\n", timer);
+void atende(){
 	flag=1;
 	timer++;
 }
@@ -96,6 +95,7 @@ int main(int argc, char** argv)
 
 	int connected = 0;
 	int uaReceived = 0;
+	int firstTry = 1;
 
 	int j = 0;			
 	for(j; j <= MAX_TRIES; j++){	
@@ -147,6 +147,7 @@ int main(int argc, char** argv)
 							}
 				case stop:{	uaReceived = 1;
 							connected = 1;
+							flag = 1;
 							printf("Recebeu UA!\n");
 							break;
 							}
@@ -170,7 +171,7 @@ int main(int argc, char** argv)
     
     char message[255];
     read(fd, message, 255);
-    printf("String received: %s", message);
+    printf("String received: %s\n", message);
    
     if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
       perror("tcsetattr");
