@@ -94,56 +94,66 @@ int main(int argc, char** argv)
 	uaState current = start;
 	write(fd, SET, 5); //SET packet sent
 
-	int uaReceived = 0;
 	int connected = 0;
+	int uaReceived = 0;
 
 	int j = 0;			
-	for(j; j <= MAX_TRIES; j++){
-		if(flag){
-  			alarm(3);                 // set 3 seconds alarm
-  			flag=0;
-		}
+	for(j; j <= MAX_TRIES; j++){	
+		if(connected == 1)
+			break;
 
-		if(timer >= 4){
-		
-		}else{
-			if(connected == 0) 
+		while(timer < 4 && connected == 0){
+   			if(flag){
+      			alarm(3);                 // activa alarme de 3s
+      			flag=0;
+   			}
+
+		res = read(fd,buf,1);     /* returns after 1 char have been input */
+      	buf[res]=0;           
+			if(uaReceived == 0) 
 			  switch(current){
-				case start: if(buf[0] == FLAG)
+				case start: if(buf[0] == FLAG) 
 							current = flagRCV;
+
 							break;
 				case flagRCV:
-							if(buf[0] == A)
+							if(buf[0] == A){
 								current = aRCV;
+							}	
 							else if(buf[0] != FLAG)
 								current = start;
-					break;
-				case aRCV:	if(buf[0] == C_UA)
+							break;
+				case aRCV:	if(buf[0] == C_UA){
 								current = cRCV;
+							}
 							else if(buf[0] != FLAG)
 								current = start;
 							else 
 								current = flagRCV;
 							break;
-				case cRCV:		if(buf[0] == A^C_UA)
+				case cRCV:		if(buf[0] == A^C_UA){
 								current = BCC;
+								}
 							else if(buf[0] != FLAG)
 								current = start;
 							else
 								current = flagRCV;
 							break;
-				case BCC:	if(buf[0] == FLAG)
+				case BCC:	if(buf[0] == FLAG){
 								current = stop;
-							else
+							}
+							else{
 								current = start;
-				case stop:	connected = 1;
-							uaReceived = 1;
-						printf("Recebeu UA!\n");
+							}
+				case stop:{	uaReceived = 1;
+							connected = 1;
+							printf("Recebeu UA!\n");
 							break;
+							}
 				default: break;
-				}	
-		}			
-	}
+				}
+			}			
+		}
 
 	//Data packets dispatch
 
