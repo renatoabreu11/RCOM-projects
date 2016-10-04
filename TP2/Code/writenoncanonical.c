@@ -24,13 +24,13 @@
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
+typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop}uaState;
 
 void atende()                   {
 	printf("alarme # %d\n", timer);
 	flag=1;
 	timer++;
 }
-
 
 int main(int argc, char** argv)
 {
@@ -91,14 +91,58 @@ int main(int argc, char** argv)
     printf("New termios structure set\n");
 
 	//Estabilishing connection
+	uaState current = start;
+	write(fd, SET, 5); //SET packet sent
 
-	write(fd, SET, strlen(SET)); //SET packet sent
+	int uaReceived = 0;
+	int connected = 0;
 
-	while(timer < 4){
-  		if(flag){
-      		alarm(3);                 // activa alarme de 3s
-      		flag=0;
-   		}
+	int j = 0;			
+	for(j; j <= MAX_TRIES; j++){
+		if(flag){
+  			alarm(3);                 // set 3 seconds alarm
+  			flag=0;
+		}
+
+		if(timer >= 4){
+		
+		}else{
+			if(connected == 0) 
+			  switch(current){
+				case start: if(buf[0] == FLAG)
+							current = flagRCV;
+							break;
+				case flagRCV:
+							if(buf[0] == A)
+								current = aRCV;
+							else if(buf[0] != FLAG)
+								current = start;
+					break;
+				case aRCV:	if(buf[0] == C_UA)
+								current = cRCV;
+							else if(buf[0] != FLAG)
+								current = start;
+							else 
+								current = flagRCV;
+							break;
+				case cRCV:		if(buf[0] == A^C_UA)
+								current = BCC;
+							else if(buf[0] != FLAG)
+								current = start;
+							else
+								current = flagRCV;
+							break;
+				case BCC:	if(buf[0] == FLAG)
+								current = stop;
+							else
+								current = start;
+				case stop:	connected = 1;
+							uaReceived = 1;
+						printf("Recebeu UA!\n");
+							break;
+				default: break;
+				}	
+		}			
 	}
 
 	//Data packets dispatch
