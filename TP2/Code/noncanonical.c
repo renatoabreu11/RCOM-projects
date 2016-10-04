@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-	int connected = 0;
+	int setReceived = 0;
 	setState current = start;
 
     int i = 0;
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
       res = read(fd,buf,1);     /* returns after 1 char have been input */
       buf[res]=0;               /* so we can printf... */
 
-	if(connected == 0) 
+	if(setReceived == 0) 
 	  switch(current){
 		case start: if(buf[0] == FLAG)
 					current = flagRCV;
@@ -121,14 +121,17 @@ int main(int argc, char** argv)
 						current = stop;
 					else
 						current = start;
-		case stop:	connected = 1;
+		case stop:	setReceived = 1;
 				printf("Recebeu SET!\n");
+				write(fd, UA, 5);
+				printf("Escreveu!\n");
 					break;
 		default: break;
 		}	
 	else {
      if (buf[0]=='\n') STOP=TRUE;
 	else{
+
 	 printf("%s:%d\n", buf, res);
 	  message[i] = buf[0];
 	  i++;
