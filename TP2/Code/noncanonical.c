@@ -124,14 +124,12 @@ int main(int argc, char** argv)
 		case stop:	setReceived = 1;
 				printf("Recebeu SET!\n");
 				write(fd, UA, 5);
-				printf("Escreveu!\n");
-					break;
+				break;
 		default: break;
 		}	
 	else {
      if (buf[0]=='\n') STOP=TRUE;
 	else{
-
 	 printf("%s:%d\n", buf, res);
 	  message[i] = buf[0];
 	  i++;
