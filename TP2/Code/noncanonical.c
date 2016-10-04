@@ -14,10 +14,10 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
-#define F 0x7e
+#define FLAG 0x7e
 #define A 0x03
 #define C_SET 0x03
-#define C 0x07
+#define C_UA 0x07
 
 volatile int STOP=FALSE;
 
@@ -25,22 +25,8 @@ typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop}setState;
 
 int main(int argc, char** argv)
 {
-	unsigned char SET[5];
-	SET[0] = F;
-	SET[1] = A;
- 	SET[2] = C_SET;
-	SET[3] = SET[1] ^ SET[2];
-	SET[4] = F;
-
-	unsigned char UA[5];
-	UA[0] = F;
-	UA[1] = A;
- 	UA[2] = C;
-	UA[3] = UA[1] ^ UA[2];
-	UA[4] = F;
-
-	unsigned char BCC1 = SET[1] ^ SET[2];
-	unsigned char BCC2 = UA[1] ^ UA[2];
+	unsigned char SET[5] = {FLAG, A, C_SET, A^C_SET, FLAG};
+	unsigned char UA[5] = {FLAG, A, C_UA, A^C_UA, FLAG};
 
     int fd,c, res;
     struct termios oldtio,newtio;
@@ -107,40 +93,39 @@ int main(int argc, char** argv)
       buf[res]=0;               /* so we can printf... */
 
 	if(connected == 0) 
-	switch(current){
-		case start: if(buf[0] == F)
-						current = flagRCV;
+	  switch(current){
+		case start: if(buf[0] == FLAG)
+					current = flagRCV;
 					break;
 		case flagRCV:
 					if(buf[0] == A)
 						current = aRCV;
-					else if(buf[0] != F)
+					else if(buf[0] != FLAG)
 						current = start;
-				 						break;
+			break;
 		case aRCV:	if(buf[0] == C_SET)
-						current = BCC;
-					else if(buf[0] != F)
+						current = cRCV;
+					else if(buf[0] != FLAG)
 						current = start;
 					else 
 						current = flagRCV;
 					break;
-		case cRCV:	if(buf[0]) == BCC1)
+		case cRCV:		if(buf[0] == A^C_SET)
 						current = BCC;
-					else if(buf[0 != F)
+					else if(buf[0] != FLAG)
 						current = start;
 					else
 						current = flagRCV;
 					break;
-		case BCC:	if(buf[0] == F)
+		case BCC:	if(buf[0] == FLAG)
 						current = stop;
 					else
 						current = start;
-					break;
 		case stop:	connected = 1;
+				printf("Recebeu SET!\n");
 					break;
 		default: break;
 		}	
-
 	else {
      if (buf[0]=='\n') STOP=TRUE;
 	else{
@@ -149,13 +134,12 @@ int main(int argc, char** argv)
 	  i++;
 		}
 }
-    }
-
+}
 	printf("%s\n", message);
 
     sleep(2);
 
-    write(fd, message, strlen(message));
+    write(fd, message, 255);
 
     tcsetattr(fd,TCSANOW,&oldtio);
     close(fd);
