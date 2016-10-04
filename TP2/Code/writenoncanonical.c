@@ -9,6 +9,7 @@
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -22,23 +23,21 @@
 #define C_UA 0x07
 
 volatile int STOP=FALSE;
+int timer = 1, flag = 1;
+
+void atende()                   {
+	printf("alarme # %d\n", timer);
+	flag=1;
+	timer++;
+}
+
 
 int main(int argc, char** argv)
 {
-    
-    unsigned char SET[5];
-	SET[0] = FLAG;
-	SET[1] = A;
-	SET[2] = C_SET;
-	SET[3] = A^C_SET;
-	SET[4] = FLAG;
-	unsigned char UA[5];
-	UA[0] = FLAG;
-	UA[1] = A;
-	UA[2] = C_UA;
-	UA[3] = A^C_UA;
-	UA[4] = FLAG;
-    
+    unsigned char SET[5] = {FLAG, A, C_SET, A^C_SET, FLAG};
+	unsigned char UA[5] = {FLAG, A, C_UA, A^C_UA, FLAG};
+	(void) signal(SIGALRM, atende);
+
     int fd,c, res;
     struct termios oldtio,newtio;
     char buf[255];
@@ -74,8 +73,8 @@ int main(int argc, char** argv)
     /* set input mode (non-canonical, no echo,...) */
     newtio.c_lflag = 0;
 
-    newtio.c_cc[VTIME]    = 30;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 0;   /* blocking read until 5 chars received */
+    newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+    newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
 
   /* 
     VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a 
@@ -91,27 +90,26 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-    for(i=0;i<MAX_TRIES&&strcmp(buf,UA)!=0;i++){
-	printf("Before write\n"); //DBG
-	res=write(fd,SET,5);
-	printf("After write\n"); //DBG
-	res=read(fd,buf,5);
-	buf[res]=0;
-	printf("After read\n"); //DBG
+	//Estabilishing connection
+
+	write(fd, SET, strlen(SET)); //SET packet sent
+
+	while(timer < 4){
+  		if(flag){
+      		alarm(3);                 // activa alarme de 3s
+      		flag=0;
+   		}
 	}
 
-	if(i>=3) {
-		printf("Exceeded number of connection attempts\n");
-		return 1;
-	}
-    
+	//Data packets dispatch
+
     size_t len;
     if(fgets(buf, sizeof(buf), stdin) != NULL){
       len = strlen(buf);
       printf("input: %s", buf); 
       printf("string length: %zu\n", len);
     }
-
+	
     write(fd, buf, len);
 
     sleep(2);
