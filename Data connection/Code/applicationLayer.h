@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #define BUF_MAX 255
+#define BAUDRATE B38400
 
 typedef struct ApplicationLayer{
 	/*Serial port descriptor*/
