@@ -23,12 +23,12 @@ ApplicationLayer* llopen(int port, int status){
 */
   fd = open(serialPort, O_RDWR | O_NOCTTY);
   if (fd <0) {
-    perror(serialPort); exit(NULL);; 
+    perror(serialPort);  return NULL; 
   }
 
   if ( tcgetattr(fd,&oldtio) == -1) { /* save current port settings */
     perror("tcgetattr");
-    exit(NULL);
+     return NULL;
   }
 
   bzero(&newtio, sizeof(newtio));
@@ -51,7 +51,7 @@ ApplicationLayer* llopen(int port, int status){
 
   if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
     perror("tcsetattr");
-    exit(NULL);
+     return NULL;
   }
 
   printf("New termios structure set\n");
