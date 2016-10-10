@@ -18,8 +18,6 @@
 #define C_SET 0x03
 #define C_UA 0x07
 
-volatile int STOP=FALSE;
-
 #include "applicationLayer.h"
 #include "linkLayer.h"
 

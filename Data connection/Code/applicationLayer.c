@@ -62,7 +62,14 @@ ApplicationLayer* llopen(int port, int status){
 }
 
 int llwrite(char * buffer, int length, ApplicationLayer* app){
-  return 1;
+
+    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+      perror("tcsetattr");
+      exit(-1);
+    }
+
+    close(fd);   
+ 	return 1;
 }
 
 int llread(char * buffer, ApplicationLayer* app){

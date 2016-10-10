@@ -1,49 +1,49 @@
 #include "linkLayer.h"
 
-int writeDataFromEmissor(int fd) {
+int *writeDataFromEmissor(int *fd, char *buf) {
 
 //Estabilishing connection
-
-    unsigned char I[7] = {FLAG, A, C0, A^C0, DADOS, A^C0, FLAG};
-	rrState current = start;	
+	
+	char DADOS = 'c';		//only for compilation purposes
+    unsigned char I[7] = {FLAG, A, C_I0, A^C_I0, DADOS, A^C_I0, FLAG};
+	rrState current = startRR;	
 
 	//write(fd, I, );
 
-	int ns = 0;
 	int rrReceived = 0;
 	int firstTry = 1;
 
 	int i = 0;			
 	for(i; i <= MAX_TRIES; i++){
 		switch(current){
-		case start: if(buf[0] == FLAG)
-					current = flagRCV;
+		case startRR: if(buf[0] == FLAG)
+					current = flagRCVRR;
 					break;
-		case flagRCV:
+		case flagRCVRR:
 					if(buf[0] == A)
-						current = aRCV;
+						current = aRCVRR;
 					else if(buf[0] != FLAG)
-						current = start;
+						current = startRR;
 			break;
-		case aRCV:	if(buf[0] == C_RR0 || buf[0] == C_RR1)
-						current = cRCV;
+		case aRCVRR:	if(buf[0] == C_RR0 || buf[0] == C_RR1)
+						current = cRCVRR;
 					else if(buf[0] != FLAG)
-						current = start;
+						current = startRR;
 					else 
-						current = flagRCV;
+						current = flagRCVRR;
 					break;
-		case cRCV:		if(buf[0] == A^C_RR0 || buf[0] == A^C_RR1)
-						current = BCC;
+		case cRCVRR:		if(buf[0] == (A^C_RR0) || buf[0] == (A^C_RR1))
+						current = BCCRR;
 					else if(buf[0] != FLAG)
-						current = start;
+						current = startRR;
 					else
-						current = flagRCV;
+						current = flagRCVRR;
 					break;
-		case BCC:	if(buf[0] == FLAG)
-						current = stop;
+		case BCCRR:	if(buf[0] == FLAG)
+						current = stopRR;
 					else
-						current = start;
-		case stop:	setReceived = 1;
+						current = startRR;
+		case stopRR:
 					printf("Recebeu o RR!\n");
 					updateNsNr();
 					break;
@@ -51,20 +51,16 @@ int writeDataFromEmissor(int fd) {
 		}	
 	}
 
-    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
-    }
-
-    close(fd);
     return 0;
 }
 
-int readDataFromEmissor(int fd) {
-	unsigned char RR[5] = {FLAG, A, RR1, A^RR1, FLAG};
+int *readDataFromEmissor(int *fd, char *buf) {
+	unsigned char RR[5] = {FLAG, A, C_RR1, A^C_RR1, FLAG};
 	char buf[255];
+	int res;
+	int dataReceived = 0;
 
-	iState current = start;
+	iState current = startI;
 
     int i = 0;
     char message[255];
@@ -74,44 +70,44 @@ int readDataFromEmissor(int fd) {
       buf[res]=0;               /* so we can printf... */
 
 	  switch(current){
-		case start: if(buf[0] == FLAG)
-					current = flagRCV;
+		case startI: if(buf[0] == FLAG)
+					current = flagRCVI;
 					break;
-		case flagRCV:
+		case flagRCVI:
 					if(buf[0] == A)
-						current = aRCV;
+						current = aRCVI;
 					else if(buf[0] != FLAG)
-						current = start;
+						current = startI;
 			break;
-		case aRCV:	if(buf[0] == C_I0 || buf[0] == C_I1)
-						current = cRCV;
+		case aRCVI:	if(buf[0] == C_I0 || buf[0] == C_I1)
+						current = cRCVI;
 					else if(buf[0] != FLAG)
-						current = start;
+						current = startI;
 					else 
-						current = flagRCV;
+						current = flagRCVI;
 					break;
-		case cRCV:		if(buf[0] == A^C_I0 || buf[0] == A^C_I1)
-						current = BCC1;
+		case cRCVI:		if(buf[0] == (A^C_I0) || buf[0] == (A^C_I1))
+						current = BCC1I;
 					else if(buf[0] != FLAG)
-						current = start;
+						current = startI;
 					else
-						current = flagRCV;
+						current = flagRCVI;
 					break;
-		case BCC1:	if(buf[0] == FLAG)
-						current = DADOS;
+		case BCC1I:	if(buf[0] == FLAG)
+						current = DADOSI;
 					else
-						current = start;
+						current = startI;
 					break;
-		case DADOS:	if(buf[0] == A^CO)
-						current = BCC2;
+		case DADOSI:	if(buf[0] == A^C_I0)
+						current = BCC2I;
 					else {
 						//LER OS DADOS DO TRANSMISSOR
 					}
 					break;
-		case BCC2: if(buf[0] == FLAG)
-						current = stop;
+		case BCC2I: if(buf[0] == FLAG)
+						current = stopI;
 					break;		
-		case stop:	dataReceived = 1;
+		case stopI:	dataReceived = 1;
 					printf("Recebeu todos os dados!\n");
 					write(fd, RR, 5);
 					break;
@@ -120,7 +116,7 @@ int readDataFromEmissor(int fd) {
 	}
 }
 
-void updateNsNr() {
+void *updateNsNr() {
 	if(ns == 0) {
 		ns = 1;
 		nr = 0;

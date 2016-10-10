@@ -1,7 +1,19 @@
+#include "libraries.h"
+
 #define C_I0 0x00
 #define C_I1 0x40
 #define C_RR0 0x05
 #define C_RR1 0x9896e5		//check this one, supposed to be 10000101
+#define MAX_TRIES 3
+#define MAX_SIZE 10
+
+#define _POSIX_SOURCE 1 /* POSIX compliant source */
+#define FALSE 0
+#define TRUE 1
+#define FLAG 0x7e
+#define A 0x03
+#define C_SET 0x03
+#define C_UA 0x07
 
 typedef struct LinkLayer {
 	char port[20];
@@ -12,8 +24,8 @@ typedef struct LinkLayer {
 	char frame[MAX_SIZE];
 }LinkLayer;
 
-typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} rrState;
-typedef enum {start, flagRCV, aRCV, cRCV, BCC1, DADOS, BCC2, stop} iState;
+typedef enum {startRR, flagRCVRR, aRCVRR, cRCVRR, BCCRR, stopRR} rrState;
+typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DADOSI, BCC2I, stopI} iState;
 
 volatile int STOP=FALSE;
 int ns = 0, nr = 1;
@@ -24,11 +36,11 @@ LinkLayer* InitLink();
 
 /**
 */
-int *writeDataFromEmissor(int fd);
+int *writeDataFromEmissor(int *fd, char *buf);
 
 /**
 */
-int *readDataFromEmissor(int fd);
+int *readDataFromEmissor(int *fd, char *buf);
 
 /**
 */
