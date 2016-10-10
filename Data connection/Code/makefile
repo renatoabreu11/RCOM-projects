@@ -1,13 +1,16 @@
 CC = gcc
+CFLAGS  = -g -Wall
 
-CFLAGS = -Wall
+default: project
 
-all: applicationLayer linkLayer
+project: main.o linkLayer.o applicationLayer.o
+	$(CC) $(CFLAGS) -o main main.o linkLayer.o applicationLayer.o
 
-applicationLayer: applicationLayer.c 
-	$(CC) $(CFLAGS) -o bin/applicationLayer applicationLayer.c 
+main.o:  main.c
+	$(CC) $(CFLAGS) -c main.c
 
-linkLayer: linkLayer.c
-	$(CC) $(CFLAGS) -o bin/linkLayer linkLayer.c
+applicationLayer.o:  applicationLayer.c applicationLayer.h 
+	$(CC) $(CFLAGS) -c applicationLayer.c
 
-clean: $(RM) bin/* 
+clean: 
+	$(RM) project *.o *~

@@ -1,3 +1,6 @@
+#define MAX_SIZE 255
+
+
 typedef struct LinkLayer {
 	char port[20];
 	int baudRate;
