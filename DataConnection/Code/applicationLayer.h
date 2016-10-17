@@ -34,3 +34,10 @@ int llread(char * buffer, ApplicationLayer* app);
 */
 int llclose(ApplicationLayer* app);
 
+/**
+*/
+char* readFile(char* in_filepath);
+
+/**
+*/
+void writeFile(char* out_filepath, char* buf);

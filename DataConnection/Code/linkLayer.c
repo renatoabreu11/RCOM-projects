@@ -165,3 +165,20 @@ void *updateNsNr() {
 		nr = 1;
 	}
 }
+
+char* byteStuffer(char* raw) {
+	int j = 0;
+	char stuffed[1000]; //Needs to be variable
+	for(int i = 0; i < ; raw[i] != NULL){
+		if(raw[i]==FLAG){
+			stuffed[j++] = ESCAPE;
+			stuffed[j++] = FLAG ^ 0x20;
+		}else if(raw[i]==ESCAPE){
+			stuffed[j++] = ESCAPE;
+			stuffed[j++] = ESCAPE ^ 0x20;
+		}else{
+			stuffed[j++] = raw[i];
+		}
+	}
+	return stuffed;
+}

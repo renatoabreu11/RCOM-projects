@@ -14,6 +14,7 @@
 #define A 0x03
 #define C_SET 0x03
 #define C_UA 0x07
+#define ESCAPE 0x7d
 
 //Control Package
 #define CONTROL_FIELD_START 0X02
@@ -51,3 +52,7 @@ int *readDataFromEmissor(int *fd, char *buf);
 /**
 */
 void *updateNsNr();
+
+/**
+*/
+char* byteStuffer(char* raw);

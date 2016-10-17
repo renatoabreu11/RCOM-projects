@@ -79,3 +79,29 @@ int llread(char * buffer, ApplicationLayer* app){
 int llclose(ApplicationLayer* app){
   return 1;
 }
+
+char* readFile(char* in_filepath){
+	FILE* in;
+	unsigned char* buf;
+	long size;
+
+	in = fopen(in_filepath, "rb");
+	fseek(ptr,0,SEEK_END);
+	size = ftell(in);
+	buf = (char*)malloc(size+1);
+	fseek(in,0,SEEK_SET);
+	fread(buf,1,size,in);
+	fclose(in);
+	buf[size] = NULL;
+	return buf;
+}
+
+void writeFile(char* out_filepath, char* buf){
+	FILE* out = fopen(out_filepath,"wb");	
+
+	for(int i = 0; buf[i] != NULL; i++){
+		fputc(buf[i],out);
+	}
+
+	fclose(out);
+}
