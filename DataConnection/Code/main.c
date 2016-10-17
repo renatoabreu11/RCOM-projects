@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	}
 
 	ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
-	//llopen(app, port, status);
+	llopen(app, port, status);
 
 	return 1;
 }

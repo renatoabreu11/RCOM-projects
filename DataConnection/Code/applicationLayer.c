@@ -59,13 +59,10 @@ int llopen(ApplicationLayer *app, int port, int status){
   app->status = status;
 
   //TRANSMITTER
-  if(app->status == 0) {
-    printf("Status = %d\n", app->status);
-  } else {
-    //RECEIVER
-    printf("AAAA = %d\n", app->status);
-
-  }
+  if(app->status == 0)
+    connectTransmitter(app->fileDescriptor);
+  else
+    connectReceiver(app->fileDescriptor);
 
   return 1;
 }
