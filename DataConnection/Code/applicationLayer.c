@@ -68,13 +68,10 @@ int llopen(ApplicationLayer *app, int port, int status){
 }
 
 int llwrite(char * buffer, int length, ApplicationLayer* app){
+  //Criar a trama
+  char *frame;
+	generateFrame(frame);
 
-    /*if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
-    }
-
-    close(fd);*/
  	return 1;
 }
 
