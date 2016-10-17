@@ -12,5 +12,8 @@ main.o:  main.c
 applicationLayer.o:  applicationLayer.c applicationLayer.h 
 	$(CC) $(CFLAGS) -c applicationLayer.c
 
+linkLayer.o: linkLayer.c linkLayer.h
+	$(CC) $(CFLAGS) -c linkLayer.c
+
 clean: 
 	$(RM) project *.o *~

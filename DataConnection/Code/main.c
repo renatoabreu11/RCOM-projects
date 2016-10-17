@@ -21,55 +21,38 @@
 #include "applicationLayer.h"
 #include "linkLayer.h"
 
-int main(int argc, char** argv){
-
-if ( (argc < 3) || 
-	     ((strcmp("0", argv[1])!=0) && 
-	      (strcmp("1", argv[1])!=0) ) || 
-	     ((strcmp("0", argv[2])!=0) && 
-	      (strcmp("1", argv[2])!=0) )) {
-  printf("Usage:\t./main Port Status\n\tex: ./main 0 1\n");
-  exit(1);
-}
-
-char *p, *c;
-int port, status;
-
-errno = 0;
-long conv = strtol(argv[1], &p, 10);
-
-if (errno != 0 || *p != '\0' || conv > INT_MAX) {
-   printf("Invalid port value. It must be a valid int.\n");
-} else {
-    port = conv;    
-}
-
-errno = 0;
-conv = strtol(argv[2], &c, 10);
-if (errno != 0 || *c != '\0' || conv > INT_MAX) {
-   printf("Invalid status value. It must be a valid int.\n");
-} else {
-    status = conv;    
-}
-
-ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
-//app = llopen(port, status);
-
-	FILE *file;
-	file = fopen("pinguim.gif", "r");
-	
-	char image[300000];
-
-	char byteRead;
-	int i = 0;
-	while((byteRead = getc(file)) != EOF) {
-		image[i] = byteRead;
-		i++;
+int main(int argc, char **argv) {
+	if ( (argc < 3) ||
+	((strcmp("0", argv[1])!=0) &&
+	(strcmp("1", argv[1])!=0) ) ||
+	((strcmp("0", argv[2])!=0) &&
+	(strcmp("1", argv[2])!=0) )) {
+		printf("Usage:\t./main Port Status\n\tex: ./main 0 1\n");
+		exit(1);
 	}
 
-	fclose(file);
+	char *p, *c;
+	int port, status;
 
-	printf("%s\n", image);
+	errno = 0;
+	long conv = strtol(argv[1], &p, 10);
 
-return 1;
+	if (errno != 0 || *p != '\0' || conv > INT_MAX) {
+		printf("Invalid port value. It must be a valid int.\n");
+	} else {
+		port = conv;
+	}
+
+	errno = 0;
+	conv = strtol(argv[2], &c, 10);
+	if (errno != 0 || *c != '\0' || conv > INT_MAX) {
+		printf("Invalid status value. It must be a valid int.\n");
+	} else {
+		status = conv;
+	}
+
+	ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
+	//llopen(app, port, status);
+
+	return 1;
 }

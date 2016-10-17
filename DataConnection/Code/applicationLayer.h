@@ -20,7 +20,7 @@ typedef struct ApplicationLayer{
 
 /**
 */
-ApplicationLayer* llopen(int port, int status);
+int llopen(ApplicationLayer *app, int port, int status);
 
 /**
 */
@@ -36,7 +36,7 @@ int llclose(ApplicationLayer* app);
 
 /**
 */
-char* readFile(char* in_filepath);
+char readFile(char* in_filepath);
 
 /**
 */

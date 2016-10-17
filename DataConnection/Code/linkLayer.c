@@ -1,18 +1,18 @@
 #include "linkLayer.h"
 
-int *writeDataFromEmissor(int *fd, char *buf) {
+int writeDataFromEmissor(int *fd, char *buf) {
 
 //Estabilishing connection
-	
-	int numeroTrama = 0;
+
+	/*int numeroTrama = 0;
 	int numBytesRead = 0;
 	int numMaxPerData = 100;
-	rrState current = startRR;	
+	rrState current = startRR;
 
 	//Open file
 	FILE *file;
 	file = fopen("pinguim.gif", "r");
-	
+
 	char image[numMaxPerData];
 	char byteRead;
 	int i = 0;
@@ -22,7 +22,7 @@ int *writeDataFromEmissor(int *fd, char *buf) {
 	//Vamos supor que o numero de octetos é 100
 	//L2 = 0x00
 	//L1 = 0x64		//100 bytes
-	
+
 	//Fill the information to send
 	i = 0;
 	numBytesRead = 0;
@@ -42,7 +42,7 @@ int *writeDataFromEmissor(int *fd, char *buf) {
 	unsigned char[4] controlPackageEnd = {CONTROL_FIELD_END, FILE_SIZE, 100, 1};
 
 	//Put the 3 tramas all together
-	
+
 	//And join them with the Trama I
     unsigned char I[7] = {FLAG, A, C_I0, A^C_I0, data, A^C_I0, FLAG};
 
@@ -52,7 +52,7 @@ int *writeDataFromEmissor(int *fd, char *buf) {
 	int rrReceived = 0;
 	int firstTry = 1;
 
-	int i = 0;			
+	int i = 0;
 	for(i; i <= MAX_TRIES; i++){
 		switch(current){
 		case startRR: if(buf[0] == FLAG)
@@ -68,7 +68,7 @@ int *writeDataFromEmissor(int *fd, char *buf) {
 						current = cRCVRR;
 					else if(buf[0] != FLAG)
 						current = startRR;
-					else 
+					else
 						current = flagRCVRR;
 					break;
 		case cRCVRR:		if(buf[0] == (A^C_RR0) || buf[0] == (A^C_RR1))
@@ -87,14 +87,14 @@ int *writeDataFromEmissor(int *fd, char *buf) {
 					updateNsNr();
 					break;
 		default: break;
-		}	
+		}
 	}
-
+	*/
     return 0;
 }
 
-int *readDataFromEmissor(int *fd, char *buf) {
-	unsigned char RR[5] = {FLAG, A, C_RR1, A^C_RR1, FLAG};
+int readDataFromEmissor(int *fd, char *buf) {
+	/*unsigned char RR[5] = {FLAG, A, C_RR1, A^C_RR1, FLAG};
 	char buf[255];
 	int res;
 	int dataReceived = 0;
@@ -105,10 +105,10 @@ int *readDataFromEmissor(int *fd, char *buf) {
     char message[255];
 
     while (STOP==FALSE) {       /* loop for input */
-      res = read(fd,buf,1);     /* returns after 1 char have been input */
-      buf[res]=0;               /* so we can printf... */
+      /*res = read(fd,buf,1);     /* returns after 1 char have been input */
+      /*buf[res]=0;               /* so we can printf... */
 
-	  switch(current){
+	  /*switch(current){
 		case startI: if(buf[0] == FLAG)
 					current = flagRCVI;
 					break;
@@ -122,7 +122,7 @@ int *readDataFromEmissor(int *fd, char *buf) {
 						current = cRCVI;
 					else if(buf[0] != FLAG)
 						current = startI;
-					else 
+					else
 						current = flagRCVI;
 					break;
 		case cRCVI:		if(buf[0] == (A^C_I0) || buf[0] == (A^C_I1))
@@ -145,29 +145,29 @@ int *readDataFromEmissor(int *fd, char *buf) {
 					break;
 		case BCC2I: if(buf[0] == FLAG)
 						current = stopI;
-					break;		
+					break;
 		case stopI:	dataReceived = 1;
 					printf("Recebeu todos os dados!\n");
 					write(fd, RR, 5);
 					break;
 		default: break;
 		}
-	}
+	}*/
 }
 
-void *updateNsNr() {
-	if(ns == 0) {
+void updateNsNr() {
+	/*if(ns == 0) {
 		ns = 1;
 		nr = 0;
 	}
 	else {
 		ns = 0;
 		nr = 1;
-	}
+	}*/
 }
 
-char* byteStuffer(char* raw) {
-	int j = 0;
+char byteStuffer(char* raw) {
+	/*int j = 0;
 	char stuffed[1000]; //Needs to be variable
 	for(int i = 0; i < ; raw[i] != NULL){
 		if(raw[i]==FLAG){
@@ -180,5 +180,7 @@ char* byteStuffer(char* raw) {
 			stuffed[j++] = raw[i];
 		}
 	}
-	return stuffed;
+	return stuffed;*/
+
+	return 'a';
 }

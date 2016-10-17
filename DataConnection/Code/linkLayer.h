@@ -34,25 +34,22 @@ typedef struct LinkLayer {
 typedef enum {startRR, flagRCVRR, aRCVRR, cRCVRR, BCCRR, stopRR} rrState;
 typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DADOSI, BCC2I, stopI} iState;
 
-volatile int STOP=FALSE;
-int ns = 0, nr = 1;
+/**
+*/
+LinkLayer InitLink();
 
 /**
 */
-LinkLayer* InitLink();
+int writeDataFromEmissor(int *fd, char *buf);
 
 /**
 */
-int *writeDataFromEmissor(int *fd, char *buf);
+int readDataFromEmissor(int *fd, char *buf);
 
 /**
 */
-int *readDataFromEmissor(int *fd, char *buf);
+void updateNsNr();
 
 /**
 */
-void *updateNsNr();
-
-/**
-*/
-char* byteStuffer(char* raw);
+char byteStuffer(char* raw);
