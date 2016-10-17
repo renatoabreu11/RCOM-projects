@@ -15,6 +15,12 @@
 #define C_SET 0x03
 #define C_UA 0x07
 
+//Control Package
+#define CONTROL_FIELD_START 0X02
+#define CONTROL_FIELD_END 0X03
+#define FILE_SIZE 0
+#define FILE_NAME 1
+
 typedef struct LinkLayer {
 	char port[20];
 	int baudRate;

@@ -53,7 +53,23 @@ if (errno != 0 || *c != '\0' || conv > INT_MAX) {
 }
 
 ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
-app = llopen(port, status);
+//app = llopen(port, status);
+
+	FILE *file;
+	file = fopen("pinguim.gif", "r");
+	
+	char image[300000];
+
+	char byteRead;
+	int i = 0;
+	while((byteRead = getc(file)) != EOF) {
+		image[i] = byteRead;
+		i++;
+	}
+
+	fclose(file);
+
+	printf("%s\n", image);
 
 return 1;
 }

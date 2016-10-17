@@ -4,10 +4,49 @@ int *writeDataFromEmissor(int *fd, char *buf) {
 
 //Estabilishing connection
 	
-	char DADOS = 'c';		//only for compilation purposes
-    unsigned char I[7] = {FLAG, A, C_I0, A^C_I0, DADOS, A^C_I0, FLAG};
+	int numeroTrama = 0;
+	int numBytesRead = 0;
+	int numMaxPerData = 100;
 	rrState current = startRR;	
 
+	//Open file
+	FILE *file;
+	file = fopen("pinguim.gif", "r");
+	
+	char image[numMaxPerData];
+	char byteRead;
+	int i = 0;
+
+
+	//Fazer um ciclo de envio
+	//Vamos supor que o numero de octetos é 100
+	//L2 = 0x00
+	//L1 = 0x64		//100 bytes
+	
+	//Fill the information to send
+	i = 0;
+	numBytesRead = 0;
+	while((byteRead = getc(file)) != EOF && numBytesRead < numMaxPerData) {
+		image[i] = byteRead;
+		i++;
+		numBytesRead++;
+	}
+
+	//Construct the Trama I
+	//First the control one
+	unsigned char[4] controlPackageStart = {CONTROL_FIELD_START, FILE_SIZE, 100, 1};
+
+	char numTrama;
+	sprintf(numTrama, "%d", numeroTrama);
+	unsigned char data[5] = {CONTROL_FIELD_DATA, numTrama, 0x00, 0x64, image};
+	unsigned char[4] controlPackageEnd = {CONTROL_FIELD_END, FILE_SIZE, 100, 1};
+
+	//Put the 3 tramas all together
+	
+	//And join them with the Trama I
+    unsigned char I[7] = {FLAG, A, C_I0, A^C_I0, data, A^C_I0, FLAG};
+
+	//Send Trama I though writing
 	//write(fd, I, );
 
 	int rrReceived = 0;
