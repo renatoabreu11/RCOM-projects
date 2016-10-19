@@ -10,9 +10,12 @@
 
 #define BUF_MAX 255
 #define BAUDRATE B38400
-#define ControlStart 2
-#define ControlEnd 3
-#define FileSize 0
+#define CONTROL_DATA 0x01
+#define CONTROL_START 0x02
+#define CONTROL_END 0x03
+#define FILE_SIZE 0x00
+#define FILE_NAME "pinguim.gif"
+#define BytesPerPacket 100
 
 
 typedef struct ApplicationLayer{
@@ -43,3 +46,5 @@ int llclose(ApplicationLayer* app);
 /**
 */
 int sendStart(ApplicationLayer* app);
+
+int sendData(ApplicationLayer* app);

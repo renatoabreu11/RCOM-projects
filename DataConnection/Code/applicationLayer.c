@@ -3,7 +3,7 @@
 ApplicationLayer* InitApplication(int port, int status){
   ApplicationLayer *app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
-    return -1;
+    return NULL;
   app->fileDescriptor = port;
   app->status = status;
   return app;
@@ -69,6 +69,17 @@ int sendStart(ApplicationLayer* app){
       return -1;
 
   size_t s = fileStat.st_size;
+
+  int sizeCodified = 4;
+
+
+  char size[5] = {s/0x100, (s/0x100)/0x100, (s/0x10000)/0x100, s/0x1000000};
+  //unsigned char startPackage[7] = {CONTROL_START, FILE_SIZE, (unsigned char) sizeCodified, size, FILE_NAME, 1, 2};
+  //llwrite(startPackage, 7, app);
+  return 1;
+}
+
+int sendData(ApplicationLayer* app){
   char* data;
   FILE *file = fopen("../pinguim.gif", "r");
   size_t n = 0;
@@ -86,13 +97,14 @@ int sendStart(ApplicationLayer* app){
   }
   data[n] = '\0';  
 
-  char size[5] = {s/0x100, (s/0x100)/0x100, (s/0x10000)/0x100, s/0x1000000};
-  //unsigned char startPackage = {ControlStart, FileSize, 4, size, FILE_NAME};
-  //llwrite(startPackage, 7, app);
-  return 1;
+  return llwrite(data, n, app);
 }
 
 int llwrite(char * buffer, int length, ApplicationLayer* app){
+  char* data;
+  data = malloc(BytesPerPacket);
+  int n = 0;
+  //while(n < BytesPerPacket)
  	return 1;
 }
 
