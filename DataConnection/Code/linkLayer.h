@@ -19,6 +19,7 @@
 #define C_RR1 0x85
 
 #define ESCAPE 0x7d
+#define FLAG 0x7e
 
 typedef struct LinkLayer {
 	char port[20];
@@ -91,6 +92,11 @@ char *readDataFrame(int fd, char *frame);
 */
 void updateNsNr();
 
+
+int countPatterns(char* frame, int length);
+
 /**
 */
-char byteStuffer(char* raw);
+char* byteStuffing(char* frame, int length);
+
+char* byteDestuffing(char* frame, int length);

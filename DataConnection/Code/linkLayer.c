@@ -315,21 +315,55 @@ nr = 1;
 }*/
 }
 
-char byteStuffer(char* raw) {
-/*	int j = 0;
-	char stuffed[1000]; //Needs to be variable
-	for(int i = 0; i < ; raw[i] != NULL){
-		if(raw[i]==FLAG){
-			stuffed[j++] = ESCAPE;
-			stuffed[j++] = FLAG ^ 0x20;
-		}else if(raw[i]==ESCAPE){
-			stuffed[j++] = ESCAPE;
-			stuffed[j++] = ESCAPE ^ 0x20;
-		}else{
-			stuffed[j++] = raw[i];
-		}
+int countPatterns(char* frame, int length){
+	int patterns = 0;
+	int i = 0;
+	for(; i < length; i++){
+		if(frame[i] == ESCAPE || frame[i] == FLAG)
+			patterns++;
 	}
-	return stuffed;*/
+	return patterns;
+}
 
-	return 'a';
+char* byteStuffing(char* frame, int length) {
+	int patterns = countPatterns(frame, length);
+	int newLength = length + patterns;
+	char * trama = malloc(newLength);
+
+	int i = 0;
+	int counter = 0;
+	for(; i < length; i++){
+		if(frame[i] == ESCAPE){
+			trama[counter] = ESCAPE;
+			counter++;
+			trama[counter] = ESCAPE ^ 0x5d;
+		}else if(frame[i] == FLAG){
+			trama[counter] = FLAG;
+			counter++;
+			trama[counter] = FLAG ^ 0x5e;
+		}else{
+			trama[counter] = frame[i];
+		}
+		counter++;
+	}
+	return trama;
+}
+
+char* byteDestuffing(char* frame, int length){
+	int patterns = countPatterns(frame, length);
+	int newLength = length - patterns;
+	char * trama = malloc(newLength);
+
+	int i = 0;
+	int counter = 0;
+	for(; i < length; i++){
+		if(frame[i] == ESCAPE || frame[i] == FLAG){
+			trama[counter] = frame[i];
+			i++;
+		}else{
+			trama[counter] = frame[i];
+		}
+		counter++;
+	}
+	return trama;
 }
