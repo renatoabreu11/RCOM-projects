@@ -1,20 +1,25 @@
 #include "applicationLayer.h"
 
-int llopen(ApplicationLayer *app, int port, int status){
+ApplicationLayer* InitApplication(int port, int status){
+  ApplicationLayer *app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
     return -1;
+  app->fileDescriptor = port;
+  app->status = status;
+  return app;
+}
 
+int llopen(ApplicationLayer *app){
   int fd;
   struct termios oldtio,newtio;
   char serialPort[BUF_MAX];
 
-  if((port == 0) | (port == 1)){
-    sprintf(serialPort ,"/dev/ttyS%d", port);
+  if((app->status == 0) | (app->status == 1)){
+    sprintf(serialPort ,"/dev/ttyS%d", app->fileDescriptor);
   } else{
     printf("Wrong serial port chosen. The port number is zero or one.");
     return -1;
   }
-
 /*
   Open serial port device for reading and writing and not as controlling tty
   because we don't want to get killed if linenoise sends CTRL-C.
@@ -55,23 +60,39 @@ int llopen(ApplicationLayer *app, int port, int status){
 
   printf("New termios structure set\n");
 
-  app->fileDescriptor = fd;
-  app->status = status;
+  return 1;
+}
 
-  //TRANSMITTER
-  if(app->status == 0)
-    connectTransmitter(app->fileDescriptor);
-  else
-    connectReceiver(app->fileDescriptor);
+int sendStart(ApplicationLayer* app){
+  struct stat fileStat;
+  if(stat("../pinguim.gif",&fileStat) < 0)    
+      return -1;
 
+  size_t s = fileStat.st_size;
+  char* data;
+  FILE *file = fopen("../pinguim.gif", "r");
+  size_t n = 0;
+  int c;
+
+  if (file == NULL) return -1; //could not open file
+  fseek(file, 0, SEEK_END);
+  long f_size = ftell(file);
+  fseek(file, 0, SEEK_SET);
+  data = malloc(f_size);
+
+  while ((c = fgetc(file)) != EOF) {
+    data[n++] = (char)c;
+    printf("%c", c);
+  }
+  data[n] = '\0';  
+
+  char size[5] = {s/0x100, (s/0x100)/0x100, (s/0x10000)/0x100, s/0x1000000};
+  //unsigned char startPackage = {ControlStart, FileSize, 4, size, FILE_NAME};
+  //llwrite(startPackage, 7, app);
   return 1;
 }
 
 int llwrite(char * buffer, int length, ApplicationLayer* app){
-  //Criar a trama
-  char *frame;
-	generateFrame(frame);
-
  	return 1;
 }
 
@@ -81,31 +102,4 @@ int llread(char * buffer, ApplicationLayer* app){
 
 int llclose(ApplicationLayer* app){
   return 1;
-}
-
-char readFile(char* in_filepath){
-	/*FILE* in;
-	unsigned char* buf;
-	long size;
-
-	in = fopen(in_filepath, "rb");
-	fseek(ptr,0,SEEK_END);
-	size = ftell(in);
-	buf = (char*)malloc(size+1);
-	fseek(in,0,SEEK_SET);
-	fread(buf,1,size,in);
-	fclose(in);
-	buf[size] = NULL;
-	return buf;*/
-  return 'a';
-}
-
-void writeFile(char* out_filepath, char* buf){
-	/*FILE* out = fopen(out_filepath,"wb");
-
-	for(int i = 0; buf[i] != NULL; i++){
-		fputc(buf[i],out);
-	}
-
-	fclose(out);*/
 }

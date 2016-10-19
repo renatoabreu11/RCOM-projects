@@ -10,6 +10,10 @@
 
 #define BUF_MAX 255
 #define BAUDRATE B38400
+#define ControlStart 2
+#define ControlEnd 3
+#define FileSize 0
+
 
 typedef struct ApplicationLayer{
 	/*Serial port descriptor*/
@@ -18,9 +22,11 @@ typedef struct ApplicationLayer{
 	int status;
 }ApplicationLayer;
 
+ApplicationLayer* InitApplication(int port, int status);
+
 /**
 */
-int llopen(ApplicationLayer *app, int port, int status);
+int llopen(ApplicationLayer *app);
 
 /**
 */
@@ -36,8 +42,4 @@ int llclose(ApplicationLayer* app);
 
 /**
 */
-char readFile(char* in_filepath);
-
-/**
-*/
-void writeFile(char* out_filepath, char* buf);
+int sendStart(ApplicationLayer* app);
