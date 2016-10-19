@@ -40,6 +40,29 @@ int writeUA(int fd) {
 	return 0;
 }
 
+int writeRR(int fd) {
+	unsigned char RR[5];
+	RR[0] = FLAG;
+	RR[1] = A;
+	if(nr == 0) {
+		RR[2] = 0x05;
+		RR[3] = (A^0x05);
+	} else {
+		RR[2] = 0x85;
+		RR[3] = (A^0x85);
+	}
+	RR[4] = FLAG;
+
+	int numBytesSent = write(fd, RR, 5);
+
+	if(numBytesSent != 5) {
+		printf("Error sending RR\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int waitForUA(int fd) {
 	//Estabilishing connection
 	char buf[255];
@@ -222,13 +245,57 @@ int connectReceiver(int fd) {
 	return 0;
 }
 
-int generateFrame(char *frame) {
-	frame[0] = FLAG;
-	frame[1] = A;
-	frame[2] = (ns << 6);
-	frame[3] = frame[1] ^ frame[2];
+int writeDataFrame(int fd, char *frame, int size) {
+	write(fd, frame, size);
+	//Esperar pelo RR
 
 	return 1;
+}
+
+char *readDataFrame(int fd, char *frame) {
+	int res;
+	char buf[255];
+	iState current = startI;
+	STOP = FALSE;
+
+	while(STOP == FALSE) {
+		res = read(fd, buf, 1);
+
+		switch(current) {
+			case startI:
+				if(buf[0] == FLAG)
+					current =flagRCVI;
+				break;
+			case flagRCVI:
+				if(buf[0] == A)
+					current = aRCVI;
+				break;
+			case aRCVI:
+				if(buf[0] == (ns << 6))
+					current = cRCVI;
+				break;
+			case cRCVI:
+				if(buf[0] == (A^(ns << 6)))
+					current = BCC1I;
+				break;
+			case BCC1I:
+				current = DATAI;
+				break;
+			case DATAI:
+				//readData();
+				break;
+			case BCC2I:
+				//Fazer o ^ de todos os bytes de DADOSI
+				break;
+			case stopI:
+				//enviar o RR
+				writeRR(fd);
+				STOP = TRUE;
+				break;
+		}
+	}
+
+	return frame;
 }
 
 void updateNsNr() {

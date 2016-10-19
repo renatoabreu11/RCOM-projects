@@ -34,7 +34,7 @@ int ns = 0, nr = 1;		//ISTO E NO LINK LAYER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 typedef enum {startUA, flagRCVUA, aRCVUA, cRCVUA, BCCUA, stopUA} uaState;
 typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;
 typedef enum {startRR, flagRCVRR, aRCVRR, cRCVRR, BCCRR, stopRR} rrState;
-typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DADOSI, BCC2I, stopI} iState;
+typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DATAI, BCC2I, stopI} iState;
 
 /**
 */
@@ -51,10 +51,16 @@ void atende();
 int writeSET(int fd);
 
 /**
- * EMITTER ONLY!
+ * RECEIVER ONLY!
  * Sends UA
 */
 int writeUA(int fd);
+
+/**
+ * RECEIVER ONLY
+ * Sends RR
+*/
+int writeRR(int fd);
 
 /**
 */
@@ -66,15 +72,13 @@ int connectTransmitter(int fd);
 
 /**
 */
-int generateFrame(char *frame);
+int writeDataFrame(int fd, char *frame, int size);
 
 /**
+ * State machine to read the I frame
+ * frame is the buffer in which the bytes read are stored
 */
-int generateDataFrame();
-
-/**
-*/
-int generateControlFrame();
+char *readDataFrame(int fd, char *frame);
 
 /**
 */
