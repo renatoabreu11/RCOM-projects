@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 	}
 
 	ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
-	app = InitApplication(port, status);
+	app = InitApplication(port, status, "../pinguim.gif");
 	llopen(app);
 	sendData(app);
 

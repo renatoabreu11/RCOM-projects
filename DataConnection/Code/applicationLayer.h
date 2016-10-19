@@ -14,18 +14,22 @@
 #define CONTROL_START 0x02
 #define CONTROL_END 0x03
 #define FILE_SIZE 0x00
-#define FILE_NAME "pinguim.gif"
+#define FILE_NAME 0x01
 #define BytesPerPacket 100
-
+#define L2 0x00
+#define sizeCodified 0x04
 
 typedef struct ApplicationLayer{
 	/*Serial port descriptor*/
 	int fileDescriptor;
 	/*TRANSMITTER | RECEIVER*/
 	int status;
+
+	char * fileName;
+	int nameLength;
 }ApplicationLayer;
 
-ApplicationLayer* InitApplication(int port, int status);
+ApplicationLayer* InitApplication(int port, int status, char * name);
 
 /**
 */
@@ -45,6 +49,8 @@ int llclose(ApplicationLayer* app);
 
 /**
 */
-int sendStart(ApplicationLayer* app);
+int sendStartEnd(ApplicationLayer* , int type);
 
 int sendData(ApplicationLayer* app);
+
+int createDataPackage(char * buffer, int length, ApplicationLayer* app);

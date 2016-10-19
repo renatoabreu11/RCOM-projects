@@ -1,11 +1,15 @@
 #include "applicationLayer.h"
 
-ApplicationLayer* InitApplication(int port, int status){
+int frameCounter = 0;
+
+ApplicationLayer* InitApplication(int port, int status, char * name){
   ApplicationLayer *app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
     return NULL;
   app->fileDescriptor = port;
   app->status = status;
+  app->fileName = name;
+  app->nameLength = strlen(app->fileName);
   return app;
 }
 
@@ -44,7 +48,7 @@ int llopen(ApplicationLayer *app){
   newtio.c_lflag = 0;
 
   newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-  newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
+  newtio.c_cc[VMIN]     = 100;   /* blocking read until 1 char received */
 
 /*
   VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -63,48 +67,84 @@ int llopen(ApplicationLayer *app){
   return 1;
 }
 
-int sendStart(ApplicationLayer* app){
+/**
+ * If type is equal to 0, sends start, otherwise sends end 
+ */ 
+int sendStartEnd(ApplicationLayer* app, int type){
   struct stat fileStat;
-  if(stat("../pinguim.gif",&fileStat) < 0)    
+  if(stat(app->fileName, &fileStat) < 0)    
       return -1;
 
-  size_t s = fileStat.st_size;
+  size_t size = fileStat.st_size;
+  int packageLength = app->nameLength + 9;
 
-  int sizeCodified = 4;
+  char *startPackage = malloc(packageLength);
+  if(type == 0)
+    startPackage[0] = CONTROL_START;
+  else startPackage[1] = CONTROL_START;
+  startPackage[1] = FILE_SIZE;
+  startPackage[2] = sizeCodified;
+  startPackage[3] = size/0x100;
+  startPackage[4] = startPackage[3]/0x100;
+  startPackage[5] = (size/0x10000)/0x100;
+  startPackage[6] = size/0x1000000;
+  startPackage[7] = FILE_NAME;
+  startPackage[8] = app->nameLength;
 
+  int i = 0;
+  for(; i < app->nameLength; i++){
+    startPackage[9 + i] = app->fileName[i];
+  }
 
-  char size[5] = {s/0x100, (s/0x100)/0x100, (s/0x10000)/0x100, s/0x1000000};
-  //unsigned char startPackage[7] = {CONTROL_START, FILE_SIZE, (unsigned char) sizeCodified, size, FILE_NAME, 1, 2};
-  //llwrite(startPackage, 7, app);
+  llwrite(startPackage, packageLength, app);
+  free(startPackage);
   return 1;
 }
 
 int sendData(ApplicationLayer* app){
-  char* data;
-  FILE *file = fopen("../pinguim.gif", "r");
-  size_t n = 0;
+  FILE *file = fopen(app->fileName, "r");
+  size_t counter = 0;
   int c;
 
   if (file == NULL) return -1; //could not open file
-  fseek(file, 0, SEEK_END);
-  long f_size = ftell(file);
-  fseek(file, 0, SEEK_SET);
-  data = malloc(f_size);
+
+  char* dataField = malloc(BytesPerPacket);
 
   while ((c = fgetc(file)) != EOF) {
-    data[n++] = (char)c;
-    printf("%c", c);
+    dataField[counter++] = (char)c;
+    if(counter == BytesPerPacket){
+      createDataPackage(dataField, BytesPerPacket, app);
+      memset(dataField, 0, BytesPerPacket);
+      counter = 0;
+      frameCounter++;
+    }
   }
-  data[n] = '\0';  
+  dataField[counter] = '\0';  
+  createDataPackage(dataField, counter, app);
 
-  return llwrite(data, n, app);
+  free(dataField);
+  return 1;
+}
+
+int createDataPackage(char * buffer, int length, ApplicationLayer* app){
+  char *dataPackage = malloc(length + 4);
+  dataPackage[0] = CONTROL_DATA;
+  dataPackage[1] = frameCounter;
+  dataPackage[2] = L2;
+  dataPackage[3] = length;
+
+  int i = 0;
+  for(; i < length; i++){
+    dataPackage[i+4] = buffer[i];
+  }
+
+  llwrite(dataPackage, length + 4, app);
+  free(dataPackage);
+  return 1;
 }
 
 int llwrite(char * buffer, int length, ApplicationLayer* app){
-  char* data;
-  data = malloc(BytesPerPacket);
-  int n = 0;
-  //while(n < BytesPerPacket)
+
  	return 1;
 }
 
