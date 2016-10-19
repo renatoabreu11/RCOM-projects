@@ -2,14 +2,14 @@
 
 //METER O ALARME SO DEPOIS DE SE ENVIAR ALGO
 
-/*LinkLayer *initLink() {
+LinkLayer *initLink() {
 	LinkLayer *linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	linkLayer->baudRate = BAUDRATE;
 	linkLayer->sequenceNumber = 0;
 	linkLayer->timeout = 3;
 
 	return linkLayer;
-}*/
+}
 
 void atende(){
 	flag=1;
@@ -252,37 +252,43 @@ int writeDataFrame(int fd, char *frame, int size) {
 	return 1;
 }
 
+int readImageData(char *frame, char byteRead, char *xorBCC, iState current) {
+	strcat(frame, byteRead);
+
+}
+
 char *readDataFrame(int fd, char *frame) {
+	char *xorBCC;
 	int res;
-	char buf[255];
+	char byteRead;
 	iState current = startI;
 	STOP = FALSE;
 
 	while(STOP == FALSE) {
-		res = read(fd, buf, 1);
+		res = read(fd, byteRead, 1);
 
 		switch(current) {
 			case startI:
-				if(buf[0] == FLAG)
+				if(byteRead == FLAG)
 					current =flagRCVI;
 				break;
 			case flagRCVI:
-				if(buf[0] == A)
+				if(byteRead == A)
 					current = aRCVI;
 				break;
 			case aRCVI:
-				if(buf[0] == (ns << 6))
+				if(byteRead == (ns << 6))
 					current = cRCVI;
 				break;
 			case cRCVI:
-				if(buf[0] == (A^(ns << 6)))
+				if(byteRead == (A^(ns << 6)))
 					current = BCC1I;
 				break;
 			case BCC1I:
 				current = DATAI;
 				break;
 			case DATAI:
-				//readData();
+				readImageData(frame, byteRead, xorBCC, current);
 				break;
 			case BCC2I:
 				//Fazer o ^ de todos os bytes de DADOSI
