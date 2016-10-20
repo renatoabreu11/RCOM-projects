@@ -22,9 +22,11 @@ int startConnection(ApplicationLayer *app){
   if(app->status == 0){
     connectTransmitter(app->fileDescriptor, app->link);
     sendData(app);
+    disconnectTransmitter(app->fileDescriptor, app->link);
   }else{
     connectReceiver(app->fileDescriptor);
     getData(app);
+    disconnectReceiver(app->fileDescriptor, app->link);
   }
   return 1;
 }
@@ -86,10 +88,10 @@ int llopen(ApplicationLayer *app){
 /**
  * If type is equal to 0, sends start, otherwise sends end
  */
-int createStartEnd(ApplicationLayer* app, int type){
+char* createStartEnd(ApplicationLayer* app, int type){
   struct stat fileStat;
   if(stat(app->fileName, &fileStat) < 0)
-      return -1;
+      return NULL;
 
   size_t size = fileStat.st_size;
   int packageLength = app->nameLength + 9;
@@ -111,13 +113,10 @@ int createStartEnd(ApplicationLayer* app, int type){
   for(; i < app->nameLength; i++){
     startPackage[9 + i] = app->fileName[i];
   }
-
-  llwrite(startPackage, packageLength, app);
-  free(startPackage);
-  return 1;
+  return startPackage;
 }
 
-int createDataPackage(char * buffer, int length, ApplicationLayer* app){
+char* createDataPackage(char * buffer, int length, ApplicationLayer* app){
   char *dataPackage = malloc(length + 4);
   dataPackage[0] = CONTROL_DATA;
   dataPackage[1] = frameCounter;
@@ -129,9 +128,7 @@ int createDataPackage(char * buffer, int length, ApplicationLayer* app){
     dataPackage[i+4] = buffer[i];
   }
 
-  llwrite(dataPackage, length + 4, app);
-  free(dataPackage);
-  return 1;
+  return dataPackage;
 }
 
 int sendData(ApplicationLayer* app){
@@ -146,18 +143,20 @@ int sendData(ApplicationLayer* app){
   while ((c = fgetc(file)) != EOF) {
     dataField[counter++] = (char)c;
     if(counter == BytesPerPacket){
-      createStartEnd(app, 0);
-      createDataPackage(dataField, BytesPerPacket, app);
-      createStartEnd(app, 1);
+      char * startPackage = createStartEnd(app, 0);
+      char * dataPackage = createDataPackage(dataField, BytesPerPacket, app);
+      char * endPackage = createStartEnd(app, 1);
+      concatPackages(startPackage, dataPackage, endPackage, app);
       memset(dataField, 0, BytesPerPacket);
       counter = 0;
       frameCounter++;
     }
   }
   dataField[counter] = '\0';
-  createStartEnd(app, 0);
-  createDataPackage(dataField, counter, app);
-  createStartEnd(app, 1);
+  char * startPackage = createStartEnd(app, 0);
+  char * dataPackage = createDataPackage(dataField, BytesPerPacket, app);
+  char * endPackage = createStartEnd(app, 1);
+  concatPackages(startPackage, dataPackage, endPackage, app);
 
   free(dataField);
   return 1;
@@ -186,6 +185,27 @@ int getData(ApplicationLayer *app) {
   fclose(file);
 }
 
+void concatPackages(char *startPackage, char* dataPackage, char*endPackage, ApplicationLayer* app){
+  int newSize = strlen(startPackage)  + strlen(dataPackage) +  strlen(endPackage) +1;
+
+   // Allocate new buffer
+   char * newBuffer = (char *)malloc(newSize);
+
+   // do the copy and concat
+   strcpy(newBuffer,startPackage);
+   strncat(newBuffer,dataPackage, strlen(dataPackage)); // or strncat
+   strncat(newBuffer,endPackage, strlen(endPackage));
+
+   // release old buffer
+   free(startPackage);
+   free(dataPackage);
+   free(endPackage);
+
+   llwrite(newBuffer, strlen(newBuffer), app);
+}
+
+
+>>>>>>> f221552ad5beb3c5dcf06cc052818fb851a1223d
 int llwrite(char * buffer, int length, ApplicationLayer* app){
   writeDataFrame(app->fileDescriptor, buffer, length);
   waitForEmissorResponse(app->fileDescriptor, 1, app->link);

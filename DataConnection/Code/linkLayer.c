@@ -49,6 +49,18 @@ int writeUA(int fd) {
 	return 0;
 }
 
+int writeDISC(int fd){
+	unsigned char DISC[5] = {FLAG, A, C_DISK, A^C_DISK, FLAG};
+	int numBytesSent = write(fd, DISC, 5);
+
+	if(numBytesSent != 5) {
+		printf("Error sending DISK!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int writeRR(int fd) {
 	unsigned char RR[5];
 	RR[0] = FLAG;
@@ -410,4 +422,19 @@ char* byteDestuffing(char* frame, int length){
 		counter++;
 	}
 	return trama;
+}
+
+int disconnectTransmitter(int fd, LinkLayer * link) {
+	(void) signal(SIGALRM, atende);
+	writeDISC(fd);
+	waitForEmissorResponse(fd, 0, link);
+	writeUA(fd);
+	return 0;
+}
+
+int disconnectReceiver(int fd, LinkLayer * link) {
+	waitForEmissorResponse(fd, 0, link);
+	writeDISC(fd);
+	waitForEmissorResponse(fd, 0, link);
+	return 0;
 }
