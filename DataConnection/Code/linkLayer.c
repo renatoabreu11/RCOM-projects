@@ -4,7 +4,7 @@
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
-int ns = 0, nr = 1;		//ISTO E NO LINK LAYER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+int ns = 0, nr = 1;
 
 typedef enum {startUA, flagRCVUA, aRCVUA, cRCVUA, BCCUA, stopUA} uaState;
 typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;

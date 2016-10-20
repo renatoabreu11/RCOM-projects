@@ -65,8 +65,13 @@ int waitForUA(int fd);
 int connectTransmitter(int fd);
 
 /**
+ * Calculates the XOR of the data bytes
+ */
+int calculateBCC2(char *frame, int length);
+
+/**
 */
-int writeDataFrame(int fd, char *frame, int size);
+int writeDataFrame(int fd, char *buffer, int length);
 
 /**
  * State machine to read the I frame
