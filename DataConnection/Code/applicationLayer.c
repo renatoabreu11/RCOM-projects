@@ -24,6 +24,7 @@ int startConnection(ApplicationLayer *app){
     sendData(app);
   }else{
     connectReceiver(app->fileDescriptor);
+    getData(app);
   }
   return 1;
 }
@@ -162,6 +163,29 @@ int sendData(ApplicationLayer* app){
   return 1;
 }
 
+int getData(ApplicationLayer *app) {
+  char *buffer = malloc(BytesPerPacket);
+  int timesRead = 0;
+  FILE *file = fopen("../pinguinCopied.gif", "w");
+
+  do {
+    realloc(buffer, BytesPerPacket + timesRead * BytesPerPacket);
+    timesRead++;
+  } while(llread(buffer, app) > 0);
+
+  //In order to keep the size as best as possible
+  timesRead--;
+  realloc(buffer, BytesPerPacket + timesRead * BytesPerPacket);
+  int bufferLength = BytesPerPacket + timesRead * BytesPerPacket;
+
+  int i = 0;
+  for(; i < bufferLength; i++)
+    fprintf(file, "%c", buffer[i]);
+
+  free(buffer);
+  fclose(file);
+}
+
 int llwrite(char * buffer, int length, ApplicationLayer* app){
   writeDataFrame(app->fileDescriptor, buffer, length);
   waitForEmissorResponse(app->fileDescriptor, 1, app->link);
@@ -169,7 +193,10 @@ int llwrite(char * buffer, int length, ApplicationLayer* app){
 }
 
 int llread(char * buffer, ApplicationLayer* app){
-  readDataFrame(app->fileDescriptor, buffer);
+  //No buffer fica a imagem
+
+  //TODO: llread needs to return number of character read
+  return readDataFrame(app->fileDescriptor, buffer);
 }
 
 int llclose(ApplicationLayer* app){
