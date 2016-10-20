@@ -57,8 +57,9 @@ int writeUA(int fd);
 int writeRR(int fd);
 
 /**
+ * resWanted can be 0 (for UA response) or 1 (for RR response)
 */
-int waitForUA(int fd);
+int waitForEmissorResponse(int fd, int resWanted);
 
 /**
 */

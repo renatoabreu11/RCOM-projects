@@ -68,11 +68,11 @@ int llopen(ApplicationLayer *app){
 }
 
 /**
- * If type is equal to 0, sends start, otherwise sends end 
- */ 
+ * If type is equal to 0, sends start, otherwise sends end
+ */
 int sendStartEnd(ApplicationLayer* app, int type){
   struct stat fileStat;
-  if(stat(app->fileName, &fileStat) < 0)    
+  if(stat(app->fileName, &fileStat) < 0)
       return -1;
 
   size_t size = fileStat.st_size;
@@ -119,7 +119,7 @@ int sendData(ApplicationLayer* app){
       frameCounter++;
     }
   }
-  dataField[counter] = '\0';  
+  dataField[counter] = '\0';
   createDataPackage(dataField, counter, app);
 
   free(dataField);
@@ -144,7 +144,8 @@ int createDataPackage(char * buffer, int length, ApplicationLayer* app){
 }
 
 int llwrite(char * buffer, int length, ApplicationLayer* app){
-
+  writeDataFrame(app->fileDescriptor, buffer, length);
+  waitForEmissorResponse(app->fileDescriptor, 1);
  	return 1;
 }
 

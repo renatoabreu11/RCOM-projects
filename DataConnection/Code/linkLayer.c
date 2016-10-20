@@ -1,14 +1,14 @@
 #include "linkLayer.h"
 
 //METER O ALARME SO DEPOIS DE SE ENVIAR ALGO
+//Falta o alarm(0)
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
 int ns = 0, nr = 1;
 
-typedef enum {startUA, flagRCVUA, aRCVUA, cRCVUA, BCCUA, stopUA} uaState;
+typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} transmitterState;
 typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;
-typedef enum {startRR, flagRCVRR, aRCVRR, cRCVRR, BCCRR, stopRR} rrState;
 typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DATAI, BCC2I, stopI} iState;
 
 LinkLayer *InitLink() {
@@ -72,14 +72,14 @@ int writeRR(int fd) {
 	return 0;
 }
 
-int waitForUA(int fd) {
+int waitForEmissorResponse(int fd, int resWanted) {
 	//Estabilishing connection
 	char buf[255];
 	int connected = 0;
-	int uaReceived = 0;
+	int resReceived = 0;
 	int res;
 
-	uaState current = startUA;
+	transmitterState current = start;
 	struct termios oldtio;
 
 	int j = 0;
@@ -96,44 +96,80 @@ int waitForUA(int fd) {
 			res = read(fd,buf,1);     /* returns after 1 char have been input */
 			buf[res]=0;
 
-			if(uaReceived == 0)
+			if(resReceived == 0)
 			switch(current){
-				case startUA:
-				if(buf[0] == FLAG)
-				current = flagRCVUA;
-				break;
-				case flagRCVUA:
-				if(buf[0] == A)
-				current = aRCVUA;
-				else if(buf[0] != FLAG)
-				current = startUA;
-				break;
-				case aRCVUA:
-				if(buf[0] == C_UA)
-				current = cRCVUA;
-				else if(buf[0] != FLAG)
-				current = startUA;
-				else
-				current = flagRCVUA;
-				break;
-				case cRCVUA:
-				if(buf[0] == (A^C_UA))
-				current = BCCUA;
-				else if(buf[0] != FLAG)
-				current = startUA;
-				else
-				current = flagRCVUA;
-				break;
-				case BCCUA:
-				if(buf[0] == FLAG)
-				current = stopUA;
-				else
-				current = startUA;
-				case stopUA:
-				connected = 1;
-				flag = 1;
-				printf("Recebeu UA!\n");
-				break;
+				case start:
+					if(buf[0] == FLAG)
+						current = flagRCV;
+					break;
+				case flagRCV:
+					if(buf[0] == A)
+						current = aRCV;
+					else if(buf[0] != FLAG)
+						current = start;
+					break;
+				case aRCV:
+					if(resWanted == 0) {
+						if(buf[0] == C_UA)
+							current = cRCV;
+						else if(buf[0] != FLAG)
+							current = start;
+						else
+							current = flagRCV;
+					} else if(resWanted == 1) {
+							if(nr == 0) {
+								if(buf[0] == C_RR0)
+									current = cRCV;
+								else if(buf[0] != FLAG)
+									current = start;
+								else
+									current = flagRCV;
+							} else if(nr == 1) {
+								if(buf[0] == C_RR1)
+									current = cRCV;
+								else if(buf[0] != FLAG)
+									current = start;
+								else
+									current = flagRCV;
+							}
+					}
+					break;
+				case cRCV:
+					if(resWanted == 0) {
+						if(buf[0] == (A^C_UA))
+							current = BCC;
+						else if(buf[0] != FLAG)
+							current = start;
+						else
+							current = flagRCV;
+					} else if(resWanted == 1) {
+						if(nr == 0) {
+							if(buf[0] == (A^C_RR0))
+								current = BCC;
+							else if(buf[0] != FLAG)
+								current = start;
+							else
+								current = flagRCV;
+						} else if (nr == 1) {
+							if(buf[0] == (A^C_RR1))
+								current = BCC;
+							else if(buf[0] != FLAG)
+								current = start;
+							else
+								current = flagRCV;
+						}
+					}
+					break;
+				case BCC:
+					if(buf[0] == FLAG)
+						current = stop;
+					else
+						current = start;
+				case stop:
+					connected = 1;
+					flag = 1;
+					printf("Transmitter has received the answer from the emiiter!\n");
+					break;
 				default: break;
 			}
 		}
@@ -243,7 +279,7 @@ int waitForSET(int fd) {
 int connectTransmitter(int fd) {
 	(void) signal(SIGALRM, atende);
 	writeSET(fd);
-	waitForUA(fd);
+	waitForEmissorResponse(fd, 0);
 
 	return 0;
 }
@@ -280,8 +316,6 @@ int writeDataFrame(int fd, char *buffer, int length) {
 	frame[5 + length] = FLAG;
 
 	write(fd, frame, length + 6);
-	//Esperar pelo RR
-
 	return 1;
 }
 
