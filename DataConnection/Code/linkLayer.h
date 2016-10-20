@@ -17,6 +17,7 @@
 #define C_I1 0x40
 #define C_RR0 0x05
 #define C_RR1 0x85
+#define C_DISK 0x0b
 
 #define ESCAPE 0x7d
 #define FLAG 0x7e
@@ -105,3 +106,11 @@ int countPatterns(char* frame, int length);
 char* byteStuffing(char* frame, int length);
 
 char* byteDestuffing(char* frame, int length);
+
+/**
+*/
+int disconnectTransmitter(int fd, LinkLayer * link);
+
+/**
+*/
+int disconnectReceiver(int fd, LinkLayer * link);

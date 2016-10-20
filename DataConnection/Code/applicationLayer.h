@@ -54,8 +54,10 @@ int llclose(ApplicationLayer* app);
 
 /**
 */
-int createStartEnd(ApplicationLayer* , int type);
+char * createStartEnd(ApplicationLayer* , int type);
 
 int sendData(ApplicationLayer* app);
 
-int createDataPackage(char * buffer, int length, ApplicationLayer* app);
+char * createDataPackage(char * buffer, int length, ApplicationLayer* app);
+
+void concatPackages(char *startPackage, char* dataPackage, char*endPackage, ApplicationLayer* app);
