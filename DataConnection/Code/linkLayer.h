@@ -83,10 +83,15 @@ int calculateBCC2(char *frame, int length);
 int writeDataFrame(int fd, char *buffer, int length);
 
 /**
+ * Stores byteRead into the frame, thus storing the image
+*/
+int readDataInformation(char *frame, char byteRead, char *BCC2);
+
+/**
  * State machine to read the I frame
  * frame is the buffer in which the bytes read are stored
 */
-char *readDataFrame(int fd, char *frame);
+char readDataFrame(int fd, char *frame);
 
 /**
 */

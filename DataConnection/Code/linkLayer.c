@@ -272,45 +272,76 @@ int writeDataFrame(int fd, char *buffer, int length) {
 	return 1;
 }
 
-char *readDataFrame(int fd, char *frame) {
+int readDataInformation(char *frame, char byteRead, char *BCC2) {
+	//if(byteRead == )
+}
+
+char readDataFrame(int fd, char *frame) {
 	//char *xorBCC;
+	int res;
 	char byteRead;
+	char *BCC2;
+	int decide;
+	int connected;
 	iState current = startI;
 	STOP = FALSE;
 
 	while(STOP == FALSE) {
-		read(fd, &byteRead, 1);
+		res = read(fd, &byteRead, 1);
 
-		switch(current) {
-			case startI:
+		switch(current){
+			case start:
 				if(byteRead == FLAG)
-					current =flagRCVI;
+					current = flagRCV;
 				break;
-			case flagRCVI:
+			case flagRCV:
 				if(byteRead == A)
-					current = aRCVI;
+					current = aRCV;
+				else if(byteRead != FLAG)
+					current = start;
 				break;
-			case aRCVI:
-				if(byteRead == (ns << 6))
-					current = cRCVI;
+			case aRCV:
+				if(ns == 0) {
+					if(byteRead == C_I0)
+						current = cRCV;
+					else if(byteRead != FLAG)
+						current = start;
+					else
+						current = flagRCV;
+				} else if(ns == 1) {
+					if(byteRead == C_I1)
+						current = cRCV;
+					else if(byteRead != FLAG)
+						current = start;
+					else
+						current = flagRCV;
+				}
 				break;
-			case cRCVI:
-				if(byteRead == (A^(ns << 6)))
-					current = BCC1I;
+			case cRCV:
+				if(ns == 0) {
+					if(byteRead == (A^C_I0))
+						current = BCC;
+					else if(byteRead != FLAG)
+						current = start;
+					else
+						current = flagRCV;
+				} else if(ns == 1) {
+					if(byteRead == (A^C_I1))
+						current = BCC;
+					else if(byteRead != FLAG)
+						current = start;
+					else
+						current = flagRCV;
+				}
 				break;
-			case BCC1I:
-				current = DATAI;
+			case BCC:
+				decide = readDataInformation(frame, byteRead, BCC2);
+			case stop:
+				connected = 1;
+				flag = 1;
+				printf("Receiver has received all the data!\n");
 				break;
-			case DATAI:
-				break;
-			case BCC2I:
-				//Fazer o ^ de todos os bytes de DADOSI
-				break;
-			case stopI:
-				//enviar o RR
-				writeRR(fd);
-				STOP = TRUE;
-				break;
+			default: break;
 		}
 	}
 

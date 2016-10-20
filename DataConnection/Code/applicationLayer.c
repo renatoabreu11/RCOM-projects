@@ -96,7 +96,7 @@ int createStartEnd(ApplicationLayer* app, int type){
   char *startPackage = malloc(packageLength);
   if(type == 0)
     startPackage[0] = CONTROL_START;
-  else startPackage[1] = CONTROL_START;
+  else startPackage[0] = CONTROL_END;
   startPackage[1] = FILE_SIZE;
   startPackage[2] = sizeCodified;
   startPackage[3] = size/0x100;
@@ -110,7 +110,7 @@ int createStartEnd(ApplicationLayer* app, int type){
   for(; i < app->nameLength; i++){
     startPackage[9 + i] = app->fileName[i];
   }
-  
+
   llwrite(startPackage, packageLength, app);
   free(startPackage);
   return 1;
@@ -153,8 +153,8 @@ int sendData(ApplicationLayer* app){
       frameCounter++;
     }
   }
-  dataField[counter] = '\0'; 
-  createStartEnd(app, 0); 
+  dataField[counter] = '\0';
+  createStartEnd(app, 0);
   createDataPackage(dataField, counter, app);
   createStartEnd(app, 1);
 
@@ -169,7 +169,7 @@ int llwrite(char * buffer, int length, ApplicationLayer* app){
 }
 
 int llread(char * buffer, ApplicationLayer* app){
-  return 1;
+  readDataFrame(app->fileDescriptor, buffer);
 }
 
 int llclose(ApplicationLayer* app){
