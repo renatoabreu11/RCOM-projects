@@ -254,8 +254,32 @@ int connectReceiver(int fd) {
 	return 0;
 }
 
-int writeDataFrame(int fd, char *frame, int size) {
-	write(fd, frame, size);
+int calculateBCC2(char *frame, int length) {
+	int i = 0;
+	char BCC2;
+
+	for(; i < length; i++)
+		BCC2 ^= frame[4 + i];
+
+	frame[4 + length] = BCC2;
+	return 1;
+}
+
+int writeDataFrame(int fd, char *buffer, int length) {
+	char *frame = malloc(length + 6);
+
+	frame[0] = FLAG;
+	frame[1] = A;
+	if(ns == 0)
+		frame[2] = C_I0;
+	else
+		frame[2] = C_I1;
+	frame[3] = frame[1] ^ frame[2];
+	memcpy(&frame[4], buffer, length);
+	calculateBCC2(frame, length);
+	frame[5 + length] = FLAG;
+
+	write(fd, frame, length + 6);
 	//Esperar pelo RR
 
 	return 1;
