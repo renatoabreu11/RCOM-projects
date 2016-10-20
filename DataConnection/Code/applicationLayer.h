@@ -7,6 +7,7 @@
 #include <strings.h>
 #include <string.h>
 #include <unistd.h>
+#include "linkLayer.h"
 
 #define BUF_MAX 255
 #define BAUDRATE B38400
@@ -25,11 +26,15 @@ typedef struct ApplicationLayer{
 	/*TRANSMITTER | RECEIVER*/
 	int status;
 
+	LinkLayer * link;
+
 	char * fileName;
 	int nameLength;
 }ApplicationLayer;
 
 ApplicationLayer* InitApplication(int port, int status, char * name);
+
+int startConnection(ApplicationLayer *app);
 
 /**
 */
@@ -49,7 +54,7 @@ int llclose(ApplicationLayer* app);
 
 /**
 */
-int sendStartEnd(ApplicationLayer* , int type);
+int createStartEnd(ApplicationLayer* , int type);
 
 int sendData(ApplicationLayer* app);
 

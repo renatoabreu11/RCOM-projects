@@ -72,7 +72,7 @@ int writeRR(int fd) {
 	return 0;
 }
 
-int waitForEmissorResponse(int fd, int resWanted) {
+int waitForEmissorResponse(int fd, int resWanted, LinkLayer *link) {
 	//Estabilishing connection
 	char buf[255];
 	int connected = 0;
@@ -80,10 +80,9 @@ int waitForEmissorResponse(int fd, int resWanted) {
 	int res;
 
 	transmitterState current = start;
-	struct termios oldtio;
 
 	int j = 0;
-	for(; j <= MAX_TRIES; j++){
+	for(; j <= link->numTransmissions; j++){
 		if(connected == 1)
 		break;
 
@@ -174,43 +173,14 @@ int waitForEmissorResponse(int fd, int resWanted) {
 			}
 		}
 	}
-
-	//Data packets dispatch
-
-	size_t len;
-	if(fgets(buf, sizeof(buf), stdin) != NULL){
-		len = strlen(buf);
-		printf("input: %s", buf);
-		printf("string length: %zu\n", len);
-	}
-
-	write(fd, buf, len);
-
-	sleep(2);
-
-	char message[255];
-	read(fd, message, 255);
-	printf("String received: %s\n", message);
-
-	if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-		perror("tcsetattr");
-		exit(-1);
-	}
-
-	close(fd);
-
 	return 0;
 }
 
 int waitForSET(int fd) {
-	struct termios oldtio;
 	char buf[255];
 	int res;
 	int setReceived = 0;
 	setState current = startSET;
-
-	int i = 0;
-	char message[255];
 
 	while (STOP==FALSE) {       /* loop for input */
 		res = read(fd,buf,1);     /* returns after 1 char have been input */
@@ -251,42 +221,25 @@ int waitForSET(int fd) {
 			current = startSET;
 			case stopSET:
 			setReceived = 1;
+			STOP = TRUE;
 			printf("Recebeu SET!\n");
-			writeUA(fd);
 			break;
 			default: break;
 		}
-		else {
-			if (buf[0]=='\n') STOP=TRUE;
-			else{
-				printf("%s:%d\n", buf, res);
-				message[i] = buf[0];
-				i++;
-			}
-		}
 	}
-	printf("%s\n", message);
-
-	sleep(2);
-
-	write(fd, message, 255);
-
-	tcsetattr(fd,TCSANOW,&oldtio);
-	close(fd);
 	return 0;
 }
 
-int connectTransmitter(int fd) {
+int connectTransmitter(int fd, LinkLayer * link) {
 	(void) signal(SIGALRM, atende);
 	writeSET(fd);
-	waitForEmissorResponse(fd, 0);
-
+	waitForEmissorResponse(fd, 0, link);
 	return 0;
 }
 
 int connectReceiver(int fd) {
 	waitForSET(fd);
-
+	writeUA(fd);
 	return 0;
 }
 

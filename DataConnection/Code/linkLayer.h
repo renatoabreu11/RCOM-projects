@@ -59,11 +59,19 @@ int writeRR(int fd);
 /**
  * resWanted can be 0 (for UA response) or 1 (for RR response)
 */
-int waitForEmissorResponse(int fd, int resWanted);
+int waitForEmissorResponse(int fd, int resWanted, LinkLayer *link);
 
 /**
 */
-int connectTransmitter(int fd);
+int waitForSET(int fd);
+
+/**
+*/
+int connectTransmitter(int fd, LinkLayer * link);
+
+/**
+*/
+int connectReceiver(int fd);
 
 /**
  * Calculates the XOR of the data bytes

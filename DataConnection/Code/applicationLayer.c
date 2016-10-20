@@ -10,7 +10,22 @@ ApplicationLayer* InitApplication(int port, int status, char * name){
   app->status = status;
   app->fileName = name;
   app->nameLength = strlen(app->fileName);
+  app->link = (LinkLayer*) malloc(sizeof(LinkLayer));
+  app->link = InitLink();
+
   return app;
+}
+
+int startConnection(ApplicationLayer *app){
+  llopen(app);
+
+  if(app->status == 0){
+    connectTransmitter(app->fileDescriptor, app->link);
+    sendData(app);
+  }else{
+    connectReceiver(app->fileDescriptor);
+  }
+  return 1;
 }
 
 int llopen(ApplicationLayer *app){
@@ -70,7 +85,7 @@ int llopen(ApplicationLayer *app){
 /**
  * If type is equal to 0, sends start, otherwise sends end
  */
-int sendStartEnd(ApplicationLayer* app, int type){
+int createStartEnd(ApplicationLayer* app, int type){
   struct stat fileStat;
   if(stat(app->fileName, &fileStat) < 0)
       return -1;
@@ -95,34 +110,9 @@ int sendStartEnd(ApplicationLayer* app, int type){
   for(; i < app->nameLength; i++){
     startPackage[9 + i] = app->fileName[i];
   }
-
+  
   llwrite(startPackage, packageLength, app);
   free(startPackage);
-  return 1;
-}
-
-int sendData(ApplicationLayer* app){
-  FILE *file = fopen(app->fileName, "r");
-  size_t counter = 0;
-  int c;
-
-  if (file == NULL) return -1; //could not open file
-
-  char* dataField = malloc(BytesPerPacket);
-
-  while ((c = fgetc(file)) != EOF) {
-    dataField[counter++] = (char)c;
-    if(counter == BytesPerPacket){
-      createDataPackage(dataField, BytesPerPacket, app);
-      memset(dataField, 0, BytesPerPacket);
-      counter = 0;
-      frameCounter++;
-    }
-  }
-  dataField[counter] = '\0';
-  createDataPackage(dataField, counter, app);
-
-  free(dataField);
   return 1;
 }
 
@@ -143,9 +133,38 @@ int createDataPackage(char * buffer, int length, ApplicationLayer* app){
   return 1;
 }
 
+int sendData(ApplicationLayer* app){
+  FILE *file = fopen(app->fileName, "r");
+  size_t counter = 0;
+  int c;
+
+  if (file == NULL) return -1; //could not open file
+
+  char* dataField = malloc(BytesPerPacket);
+
+  while ((c = fgetc(file)) != EOF) {
+    dataField[counter++] = (char)c;
+    if(counter == BytesPerPacket){
+      createStartEnd(app, 0);
+      createDataPackage(dataField, BytesPerPacket, app);
+      createStartEnd(app, 1);
+      memset(dataField, 0, BytesPerPacket);
+      counter = 0;
+      frameCounter++;
+    }
+  }
+  dataField[counter] = '\0'; 
+  createStartEnd(app, 0); 
+  createDataPackage(dataField, counter, app);
+  createStartEnd(app, 1);
+
+  free(dataField);
+  return 1;
+}
+
 int llwrite(char * buffer, int length, ApplicationLayer* app){
   writeDataFrame(app->fileDescriptor, buffer, length);
-  waitForEmissorResponse(app->fileDescriptor, 1);
+  waitForEmissorResponse(app->fileDescriptor, 1, app->link);
  	return 1;
 }
 
@@ -154,5 +173,9 @@ int llread(char * buffer, ApplicationLayer* app){
 }
 
 int llclose(ApplicationLayer* app){
+  /*if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+    perror("tcsetattr");
+    exit(-1);
+  }*/
   return 1;
 }
