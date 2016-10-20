@@ -15,6 +15,7 @@
 #define TRUE 1
 
 #include "applicationLayer.h"
+#include "linkLayer.h"
 
 int main(int argc, char **argv) {
 	if ( (argc < 3) ||
@@ -48,8 +49,8 @@ int main(int argc, char **argv) {
 
 	ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
 	app = InitApplication(port, status, "../pinguim.gif");
-	llopen(app);
-	sendData(app);
 
+	LinkLayer *link = (LinkLayer*) malloc(sizeof(LinkLayer));
+	link = InitLink();
 	return 1;
 }

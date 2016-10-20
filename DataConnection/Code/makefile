@@ -9,10 +9,10 @@ project: main.o linkLayer.o applicationLayer.o
 main.o:  main.c
 	$(CC) $(CFLAGS) -c main.c
 
-applicationLayer.o:  applicationLayer.c applicationLayer.h 
+applicationLayer.o: applicationLayer.h applicationLayer.c
 	$(CC) $(CFLAGS) -c applicationLayer.c
 
-linkLayer.o: linkLayer.c linkLayer.h
+linkLayer.o: linkLayer.h linkLayer.c
 	$(CC) $(CFLAGS) -c linkLayer.c
 
 clean: 

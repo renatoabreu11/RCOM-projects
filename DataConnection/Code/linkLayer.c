@@ -2,7 +2,16 @@
 
 //METER O ALARME SO DEPOIS DE SE ENVIAR ALGO
 
-LinkLayer *initLink() {
+volatile int STOP=FALSE;
+int timer = 1, flag = 1;
+int ns = 0, nr = 1;		//ISTO E NO LINK LAYER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+typedef enum {startUA, flagRCVUA, aRCVUA, cRCVUA, BCCUA, stopUA} uaState;
+typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;
+typedef enum {startRR, flagRCVRR, aRCVRR, cRCVRR, BCCRR, stopRR} rrState;
+typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DATAI, BCC2I, stopI} iState;
+
+LinkLayer *InitLink() {
 	LinkLayer *linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	linkLayer->baudRate = BAUDRATE;
 	linkLayer->sequenceNumber = 0;
@@ -74,7 +83,7 @@ int waitForUA(int fd) {
 	struct termios oldtio;
 
 	int j = 0;
-	for(j; j <= MAX_TRIES; j++){
+	for(; j <= MAX_TRIES; j++){
 		if(connected == 1)
 		break;
 
@@ -252,20 +261,14 @@ int writeDataFrame(int fd, char *frame, int size) {
 	return 1;
 }
 
-int readImageData(char *frame, char byteRead, char *xorBCC, iState current) {
-	strcat(frame, byteRead);
-
-}
-
 char *readDataFrame(int fd, char *frame) {
-	char *xorBCC;
-	int res;
+	//char *xorBCC;
 	char byteRead;
 	iState current = startI;
 	STOP = FALSE;
 
 	while(STOP == FALSE) {
-		res = read(fd, byteRead, 1);
+		read(fd, &byteRead, 1);
 
 		switch(current) {
 			case startI:
@@ -288,7 +291,6 @@ char *readDataFrame(int fd, char *frame) {
 				current = DATAI;
 				break;
 			case DATAI:
-				readImageData(frame, byteRead, xorBCC, current);
 				break;
 			case BCC2I:
 				//Fazer o ^ de todos os bytes de DADOSI

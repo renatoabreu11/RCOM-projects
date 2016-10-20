@@ -30,18 +30,9 @@ typedef struct LinkLayer {
 	char frame[MAX_SIZE];
 }LinkLayer;
 
-volatile int STOP=FALSE;
-int timer = 1, flag = 1;
-int ns = 0, nr = 1;		//ISTO E NO LINK LAYER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-typedef enum {startUA, flagRCVUA, aRCVUA, cRCVUA, BCCUA, stopUA} uaState;
-typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;
-typedef enum {startRR, flagRCVRR, aRCVRR, cRCVRR, BCCRR, stopRR} rrState;
-typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DATAI, BCC2I, stopI} iState;
-
 /**
 */
-LinkLayer *initLink();
+LinkLayer *InitLink();
 
 /**
 */
@@ -76,11 +67,6 @@ int connectTransmitter(int fd);
 /**
 */
 int writeDataFrame(int fd, char *frame, int size);
-
-/**
- * Reads and stores the actual image data into frame
-*/
-int readImageData(char *frame, char byteRead, char *xorBCC, iState state);
 
 /**
  * State machine to read the I frame
