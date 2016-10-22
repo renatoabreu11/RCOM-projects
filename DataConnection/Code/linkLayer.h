@@ -29,65 +29,75 @@ typedef struct LinkLayer {
 	unsigned int timeout;
 	unsigned int numTransmissions;
 	char frame[MAX_SIZE];
+	int frameLength;
+	int status;
+	struct termios oldtio, newtio;
 }LinkLayer;
 
-/**
- * Initializes the LinkLayer object
- * @return a pointer to a LinkLayer "object"
- */
-LinkLayer *InitLink();
 
 /**
- * Estabilishes connection between emitter and receiver
- * @param serial port descriptor
- * @param linkLayer struct 
- * @return 0 if sucessful, -1 otherwise
+ * [initLinkLayer description]
+ * @param  port        [description]
+ * @param  baudRate    [description]
+ * @param  packageSize [description]
+ * @param  retries     [description]
+ * @param  timeout     [description]
+ * @return             [description]
  */
-int connectTransmitter(int fd, LinkLayer * link);
+int initLinkLayer(int port, int baudRate, int packageSize, int retries, int timeout);
 
 /**
- * Estabilishes connection between emitter and receiver
- * @param serial port descriptor
- * @return 0 if sucessful, -1 otherwise
+ * [llopen description]
+ * @param  status [description]
+ * @param  port   [description]
+ * @return        [description]
  */
-int connectReceiver(int fd);
+int llopen(int status, int port);
 
 /**
- * Disconnects the connection between emitter and receiver
- * @params erial port descriptor
- * @param linkLayer struct 
- * @return 0 if sucessful, -1 otherwise
+ * [llwrite description]
+ * @param  buffer [description]
+ * @param  length [description]
+ * @param  fd     [description]
+ * @return        [description]
  */
-int disconnectTransmitter(int fd, LinkLayer * link);
+int llwrite(char * buffer, int length, int fd);
 
 /**
- * Disconnects connection between emitter and receiver
- * @param serial port descriptor
- * @param linkLayer struct 
- * @return 0 if sucessful, -1 otherwise
+ * [llread description]
+ * @param  buffer [description]
+ * @return        [description]
  */
-int disconnectReceiver(int fd, LinkLayer * link);
+int llread(char * buffer, int fd);
 
 /**
- * Writes, to file with descriptor fd, SET flag
- * @param serial port descriptor
- * @return 0 if sucessful, -1 otherwise
+ * [llclose description]
+ * @param  fd [description]
+ * @return    [description]
  */
-int writeSET(int fd);
+int llclose(int fd);
 
 /**
- * Writes, to file with descriptor fd, UA flag
- * @param serial port descriptor
- * @return 0 if sucessful, -1 otherwise
+ * [estabilishConnection description]
+ * @param  fd [description]
+ * @return    [description]
  */
-int writeUA(int fd);
+int estabilishConnection(int fd);
 
 /**
- * Writes, to file with descriptor fd, DISK flag
- * @param serial port descriptor
- * @return 0 if sucessful, -1 otherwise
+ * [endConnection description]
+ * @param  fd [description]
+ * @return    [description]
  */
-int writeDISC(int fd);
+int endConnection(int fd);
+
+/**
+ * [sendSupervision description]
+ * @param  fd      [description]
+ * @param  control [description]
+ * @return         [description]
+ */
+int sendSupervision(int fd, unsigned char control);
 
 /**
  * Writes, to file with descriptor fd, RR flag
@@ -111,6 +121,26 @@ int waitForSET(int fd);
  */
 int waitForResponse(int fd, int flagType, LinkLayer *link);
 
+/**
+ * @param
+ * @param
+ * @return
+ */
+int countPatterns(char* frame, int length);
+
+/**
+ * @param
+ * @param
+ * @return
+ */
+char* byteStuffing(char* frame, int length);
+
+/**
+ * @param
+ * @param
+ * @return
+ */
+char* byteDestuffing(char* frame, int length);
 
 
 //comentar e organizar a partir daqui
@@ -163,24 +193,3 @@ char readDataFrame(int fd, char *frame);
  * 
  */
 void updateNsNr();
-
-/**
- * @param
- * @param
- * @return
- */
-int countPatterns(char* frame, int length);
-
-/**
- * @param
- * @param
- * @return
- */
-char* byteStuffing(char* frame, int length);
-
-/**
- * @param
- * @param
- * @return
- */
-char* byteDestuffing(char* frame, int length);

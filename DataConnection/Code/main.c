@@ -46,9 +46,42 @@ int main(int argc, char **argv) {
 		status = conv;
 	}
 
-	ApplicationLayer *app = (ApplicationLayer*) malloc(sizeof(ApplicationLayer));
-	app = InitApplication(port, status, "../pinguim.gif");
+	char option;
+	int baudRate = 0;
+	int packageLength = 0;
+	int retries = 0;
+	int timeOut = 0;
 
-	startConnection(app);
+	printf("1 - Start Connection\n"); 
+	printf("2 - Baud rate\n"); 
+	printf("3 - Data package length\n"); 
+	printf("4 - Retries\n"); 
+	printf("5 - Time out\n"); 
+	printf("6 - Quit\n");  
+	printf("Choose your option:\n");
+
+  	do{ 
+  		scanf(" %c",&option);
+
+ 		switch(option){
+  		case'1': 
+  			printf("\n\n");
+  			InitApplication(port, status, "../pinguim.gif", baudRate, packageLength, retries, timeOut);
+  			break;
+  		case'2':
+  			break;
+  		case'3':
+  			break;
+  		case'4':
+  			break;
+  		case'5':
+  			break;
+  		case'6':
+  			exit(0);
+  		default:
+     	 	printf("invalid input, please type again:");
+  		}
+  }while(option<'1' ||option>'6');
+
 	return 1;
 }

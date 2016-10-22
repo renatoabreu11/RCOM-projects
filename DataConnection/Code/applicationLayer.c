@@ -1,227 +1,244 @@
 #include "applicationLayer.h"
 
-int frameCounter = 0;
+ApplicationLayer *app;
+int frameCounter = 1;
 
-ApplicationLayer* InitApplication(int port, int status, char * name){
-  ApplicationLayer *app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
+int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout){
+  app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
-    return NULL;
-  app->fileDescriptor = port;
+    return -1;
+  
+  initLinkLayer(port, baudRate, BytesPerPacket, retries, timeout);
+  int ret = llopen(status, port);
+  if(ret == -1){
+    return -1;
+  } else{
+    app->fileDescriptor = ret;
+  }
   app->status = status;
-  app->fileName = name;
-  app->nameLength = strlen(app->fileName);
-  app->link = (LinkLayer*) malloc(sizeof(LinkLayer));
-  app->link = InitLink();
-
-  return app;
-}
-
-int startConnection(ApplicationLayer *app){
-  llopen(app);
 
   if(app->status == 0){
-    connectTransmitter(app->fileDescriptor, app->link);
-    //sendData(app);
-    disconnectTransmitter(app->fileDescriptor, app->link);
-  }else{
-    connectReceiver(app->fileDescriptor);
-    //getData(app);
-    disconnectReceiver(app->fileDescriptor, app->link);
+    app->fileName = name;
+    app->nameLength = strlen(app->fileName);
+
+    struct stat fileStat;
+    if (stat(app->fileName, &fileStat) == 0)
+      app->fileSize = fileStat.st_size;
+    else{
+      printf("%s\n", "Error getting file size");
+      return -1;
+    }
+  }
+
+  estabilishConnection(app->fileDescriptor);
+  startConnection();
+  endConnection(app->fileDescriptor);
+
+  ret = llclose(app->fileDescriptor);
+  if(ret == -1){
+    return -1;
   }
   return 1;
 }
 
-int llopen(ApplicationLayer *app){
-  int fd;
-  struct termios oldtio,newtio;
-  char serialPort[BUF_MAX];
-
-  if((app->status == 0) | (app->status == 1)){
-    sprintf(serialPort ,"/dev/ttyS%d", app->fileDescriptor);
-  } else{
-    printf("Wrong serial port chosen. The port number is zero or one.");
-    return -1;
+int startConnection(){
+  if(app->status == TRANSMITTER){
+    if(sendData() == -1){
+      printf("%s\n", "Error sending file data");
+      return -1;
+    }
+  }else if(app->status == RECEIVER){
+    if(receiveData() == -1){
+      printf("%s\n", "Error receiving file data");
+      return -1;
+    }
   }
-/*
-  Open serial port device for reading and writing and not as controlling tty
-  because we don't want to get killed if linenoise sends CTRL-C.
-*/
-  fd = open(serialPort, O_RDWR | O_NOCTTY);
-  if (fd <0) {
-    perror(serialPort);
-    return -1;
-  }
-
-  if ( tcgetattr(fd,&oldtio) == -1) { /* save current port settings */
-    perror("tcgetattr");
-     return -1;
-  }
-
-  bzero(&newtio, sizeof(newtio));
-  newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
-  newtio.c_iflag = IGNPAR;
-  newtio.c_oflag = 0;
-
-  /* set input mode (non-canonical, no echo,...) */
-  newtio.c_lflag = 0;
-
-  newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-  newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
-
-/*
-  VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
-  leitura do(s) próximo(s) caracter(es)
-*/
-
-  tcflush(fd, TCIOFLUSH);
-
-  if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
-    perror("tcsetattr");
-     return -1;
-  }
-
-  app->fileDescriptor = fd;
-  printf("Serial port descriptor: %d\n", app->fileDescriptor);
-
   return 1;
 }
 
-/**
- * If type is equal to 0, sends start, otherwise sends end
- */
-char* createStartEnd(ApplicationLayer* app, int type){
-  struct stat fileStat;
-  if(stat(app->fileName, &fileStat) < 0)
-      return NULL;
+int sendData(){
+  FILE *file = fopen(app->fileName, "rb");
+  int bytesRead = 0;
 
-  size_t size = fileStat.st_size;
-  int packageLength = app->nameLength + 9;
+  if (file == NULL) return -1;
 
-  char *startPackage = malloc(packageLength);
-  if(type == 0)
-    startPackage[0] = CONTROL_START;
-  else startPackage[0] = CONTROL_END;
-  startPackage[1] = FILE_SIZE;
-  startPackage[2] = sizeCodified;
-  startPackage[3] = size/0x100;
-  startPackage[4] = startPackage[3]/0x100;
-  startPackage[5] = (size/0x10000)/0x100;
-  startPackage[6] = size/0x1000000;
-  startPackage[7] = FILE_NAME;
-  startPackage[8] = app->nameLength;
+  int check = sendControl(CONTROL_START);
+  if(check == -1){
+    printf("%s\n", "Error sending START control packet");
+    llclose(app->fileDescriptor);
+    return -1;
+  }
 
+  char* dataField = malloc(BytesPerPacket);
+  while ((bytesRead = fread(dataField, 1, BytesPerPacket, file)) > 0){
+    check = sendInformation(dataField, bytesRead);
+    if(check != 0){
+      //erro sending packet
+    }
+    frameCounter++;
+    memset(dataField, 0, BytesPerPacket);
+  }
+  fclose(file);
+  free(dataField);
+
+  check = sendControl(CONTROL_END);
+  if(check == -1){
+    printf("%s\n", "Error sending END control packet");
+    return -1;
+  }
+  return 1;
+}
+
+int sendControl(int type){
+  char fileSizeStr[20];
+  sprintf(fileSizeStr,"%u",app->fileSize);
+
+  int packageLength = app->nameLength + strlen(fileSizeStr) + 5;
+  char *controlPackage = malloc(packageLength);
+
+  int index = 0;
+  controlPackage[index] = type;
+  index++;
+  controlPackage[index] = FILE_SIZE;
+  index++;
+  controlPackage[index] = strlen(fileSizeStr);
+
+  index++;
   int i = 0;
-  for(; i < app->nameLength; i++){
-    startPackage[9 + i] = app->fileName[i];
+  for(; i < strlen(fileSizeStr); i++){
+    controlPackage[index] = fileSizeStr[i];
+    index++;
   }
-  return startPackage;
+
+  controlPackage[index] = FILE_NAME;
+  index++;
+  controlPackage[index] = app->nameLength;
+  index++;
+
+  i = 0;
+  for(; i < app->nameLength; i++){
+    controlPackage[index] = app->fileName[i];
+    index++;
+  }
+  llwrite(controlPackage, packageLength, app->fileDescriptor);
+  free(controlPackage);
+  return 1;
 }
 
-char* createDataPackage(char * buffer, int length, ApplicationLayer* app){
+int sendInformation(char * buffer, int length){
   char *dataPackage = malloc(length + 4);
   dataPackage[0] = CONTROL_DATA;
-  dataPackage[1] = frameCounter;
-  dataPackage[2] = L2;
-  dataPackage[3] = length;
+  dataPackage[1] = (unsigned char) frameCounter;
+  dataPackage[2] = length / 256;
+  dataPackage[3] = length % 256;
 
   int i = 0;
   for(; i < length; i++){
     dataPackage[i+4] = buffer[i];
   }
-
-  return dataPackage;
-}
-
-int sendData(ApplicationLayer* app){
-  FILE *file = fopen(app->fileName, "r");
-  size_t counter = 0;
-  int c;
-
-  if (file == NULL) return -1; //could not open file
-
-  char* dataField = malloc(BytesPerPacket);
-
-  while ((c = fgetc(file)) != EOF) {
-    dataField[counter++] = (char)c;
-    if(counter == BytesPerPacket){
-      char * startPackage = createStartEnd(app, 0);
-      char * dataPackage = createDataPackage(dataField, BytesPerPacket, app);
-      char * endPackage = createStartEnd(app, 1);
-      concatPackages(startPackage, dataPackage, endPackage, app);
-      memset(dataField, 0, BytesPerPacket);
-      counter = 0;
-      frameCounter++;
-    }
-  }
-  dataField[counter] = '\0';
-  char * startPackage = createStartEnd(app, 0);
-  char * dataPackage = createDataPackage(dataField, BytesPerPacket, app);
-  char * endPackage = createStartEnd(app, 1);
-  concatPackages(startPackage, dataPackage, endPackage, app);
-
-  free(dataField);
+  llwrite(dataPackage, length, app->fileDescriptor);
+  free(dataPackage);
   return 1;
 }
 
-int getData(ApplicationLayer *app) {
-  char *buffer = malloc(BytesPerPacket);
-  int timesRead = 0;
-  FILE *file = fopen("../pinguinCopied.gif", "w");
+int receiveData(){
+  if(receiveControl(CONTROL_START) == -1){
+    printf("%s\n", "Error receiving control package");
+    return -1;
+  }
 
-  do {
-    realloc(buffer, BytesPerPacket + timesRead * BytesPerPacket);
-    timesRead++;
-  } while(llread(buffer, app) > 0);
+  FILE *file = fopen(app->fileName, "wb");
+  if (file == NULL) {
+    printf("Error creating file.\n");
+    return 0;
+  }
 
-  //In order to keep the size as best as possible
-  timesRead--;
-  realloc(buffer, BytesPerPacket + timesRead * BytesPerPacket);
-  int bufferLength = BytesPerPacket + timesRead * BytesPerPacket;
+  int bytesRead = 0;
+  while (bytesRead < app->fileSize) {
+    char* buffer = NULL;
+    int length = 0;
 
-  int i = 0;
-  for(; i < bufferLength; i++)
-    fprintf(file, "%c", buffer[i]);
+    if (receiveInformation(buffer, &length) == -1) {
+      printf("Error receiv data packet.\n");
+      free(buffer);
+      return 0;
+    }
 
-  free(buffer);
-  fclose(file);
+    frameCounter++;
+
+    fwrite(buffer, 1, length, file);
+    free(buffer);
+
+    bytesRead += length;
+  }
+
+  if(receiveControl(CONTROL_END) == -1){
+    printf("%s\n", "Error receiving END control packet");
+    return -1;
+  }
+
+  return 1;
 }
 
-void concatPackages(char *startPackage, char* dataPackage, char*endPackage, ApplicationLayer* app){
-  int newSize = strlen(startPackage)  + strlen(dataPackage) +  strlen(endPackage) +1;
+int receiveControl(int type){
+  char * package = NULL;
+  if(llread(package, app->fileDescriptor) == -1)
+    return -1;
 
-   // Allocate new buffer
-   char * newBuffer = (char *)malloc(newSize);
+  int index = 0;
+  type = package[index];
+  if(type == CONTROL_START){
+    printf("%s\n", "Control Start received\n");
+  }else if(type == CONTROL_END){
+    printf("%s\n", "Control end received\n");
+  } else return -1;
+  index++;
 
-   // do the copy and concat
-   strcpy(newBuffer,startPackage);
-   strncat(newBuffer,dataPackage, strlen(dataPackage)); // or strncat
-   strncat(newBuffer,endPackage, strlen(endPackage));
-
-   // release old buffer
-   free(startPackage);
-   free(dataPackage);
-   free(endPackage);
-
-   llwrite(newBuffer, strlen(newBuffer), app);
+  int nParams = 2; int i = 0;
+  char *buffer;
+  for(; i < nParams; i++){
+    char type = package[index++];
+    unsigned char length = package[index++];
+    
+    switch(type){
+      case FILE_SIZE:
+        buffer = (char *)malloc(length);
+        memcpy(buffer, &package[index], length);
+        sscanf(buffer, "%u", &(app->fileSize));
+        break;
+      case FILE_NAME:
+        buffer = (char *)malloc(length+1);
+        memcpy(buffer, &package[index++], length);
+        buffer[length] = '\0';
+        strcpy(app->fileName, buffer);
+        break;
+      default:
+        return -1;
+    }
+  }
+  return 1;
 }
 
-int llwrite(char * buffer, int length, ApplicationLayer* app){
-  writeDataFrame(app->fileDescriptor, buffer, length);
-  waitForResponse(app->fileDescriptor, 1, app->link);
- 	return 1;
-}
+int receiveInformation(char *buffer, int *length){
+  char * package = NULL;
 
-int llread(char * buffer, ApplicationLayer* app){
-  //No buffer fica a imagem
+  if(llread(package, app->fileDescriptor) == -1)
+    return -1;
 
-  //TODO: llread needs to return number of character read
-  return readDataFrame(app->fileDescriptor, buffer);
-}
+  int C = package[0];
+  if(C != CONTROL_DATA){
+    printf("%s\n", "wrong C flag ");
+    return -1;
+  }
+  int N = package[1];
+  if(N != frameCounter){
+    return -1;
+  }
+  int l2 = package[2];
+  int l1 = package[3];
 
-int llclose(ApplicationLayer* app){
-  /*if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-    perror("tcsetattr");
-    exit(-1);
-  }*/
+  *length = 256 * l2 + l1;
+  memcpy(buffer, &package[4], *length);
+
   return 1;
 }

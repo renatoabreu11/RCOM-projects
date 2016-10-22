@@ -16,9 +16,11 @@
 #define CONTROL_END 0x03
 #define FILE_SIZE 0x00
 #define FILE_NAME 0x01
-#define BytesPerPacket 100
+#define BytesPerPacket 400
 #define L2 0x00
-#define sizeCodified 0x04
+#define SIZECODIFIED 0x04
+#define RECEIVER 1
+#define TRANSMITTER 0
 
 typedef struct ApplicationLayer{
 	/*Serial port descriptor*/
@@ -26,38 +28,69 @@ typedef struct ApplicationLayer{
 	/*TRANSMITTER | RECEIVER*/
 	int status;
 
-	LinkLayer * link;
-
 	char * fileName;
+	unsigned int fileSize;
 	int nameLength;
 }ApplicationLayer;
 
-ApplicationLayer* InitApplication(int port, int status, char * name);
-
-int startConnection(ApplicationLayer *app);
+/**
+ * [InitApplication description]
+ * @param  port        [description]
+ * @param  status      [description]
+ * @param  name        [description]
+ * @param  baudRate    [description]
+ * @param  packageSize [description]
+ * @param  retries     [description]
+ * @param  timeout     [description]
+ * @return             [description]
+ */
+int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout);
 
 /**
-*/
-int llopen(ApplicationLayer *app);
+ * [startConnection description]
+ * @param  app [description]
+ * @return     [description]
+ */
+int startConnection();
 
 /**
-*/
-int llwrite(char * buffer, int length, ApplicationLayer* app);
+ * [sendData description]
+ * @return [description]
+ */
+int sendData();
 
 /**
-*/
-int llread(char * buffer, ApplicationLayer* app);
+ * [sendControl description]
+ * @param  type [description]
+ * @return      [description]
+ */
+int sendControl(int type);
 
 /**
-*/
-int llclose(ApplicationLayer* app);
+ * [sendInformation description]
+ * @param  buffer [description]
+ * @param  length [description]
+ * @return        [description]
+ */
+int sendInformation(char * buffer, int length);
 
 /**
-*/
-char * createStartEnd(ApplicationLayer* , int type);
+ * [receiveData description]
+ * @return [description]
+ */
+int receiveData();
 
-int sendData(ApplicationLayer* app);
+/**
+ * [receiveControl description]
+ * @param  type [description]
+ * @return      [description]
+ */
+int receiveControl(int type);
 
-char * createDataPackage(char * buffer, int length, ApplicationLayer* app);
-
-void concatPackages(char *startPackage, char* dataPackage, char*endPackage, ApplicationLayer* app);
+/**
+ * [receiveInformation description]
+ * @param  buffer [description]
+ * @param  length [description]
+ * @return        [description]
+ */
+int receiveInformation(char *buffer, int *length);
