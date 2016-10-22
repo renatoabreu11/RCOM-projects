@@ -20,12 +20,46 @@ LinkLayer *InitLink() {
 	return linkLayer;
 }
 
-void atende(){
-	flag=1;
-	timer++;
+int connectTransmitter(int fd, LinkLayer * link) {
+	printf("%s\n", "Connecting Transmitter");
+	writeSET(fd);
+	timer = 1;
+	(void) signal(SIGALRM, atende);
+	waitForResponse(fd, 0, link);
+	return 0;
+}
+
+int connectReceiver(int fd) {
+	printf("%s\n", "Connecting Receiver");
+	waitForSET(fd);
+	writeUA(fd);
+	return 0;
+}
+
+int disconnectTransmitter(int fd, LinkLayer * link) {
+	printf("%s\n", "Disconnecting Transmitter");
+	writeDISC(fd);
+	timer = 1;
+	(void) signal(SIGALRM, atende);
+	waitForResponse(fd, 2, link);
+	writeUA(fd);
+	return 0;
+}
+
+int disconnectReceiver(int fd, LinkLayer * link) {
+	printf("%s\n", "Disconnecting Receiver");
+	timer = 1;
+	(void) signal(SIGALRM, atende);
+	waitForResponse(fd, 2, link);
+	writeDISC(fd);
+	timer = 1;
+	(void) signal(SIGALRM, atende);
+	waitForResponse(fd, 0, link);
+	return 0;
 }
 
 int writeSET(int fd) {
+	printf("Sending SET flag\n");
 	unsigned char SET[5] = {FLAG, A, C_SET, A^C_SET, FLAG};
 	int numBytesSent = write(fd, SET, 5);
 
@@ -38,6 +72,7 @@ int writeSET(int fd) {
 }
 
 int writeUA(int fd) {
+	printf("Sending UA flag\n");
 	unsigned char UA[5] = {FLAG, A, C_UA, A^C_UA, FLAG};
 	int numBytesSent = write(fd, UA, 5);
 
@@ -50,11 +85,12 @@ int writeUA(int fd) {
 }
 
 int writeDISC(int fd){
-	unsigned char DISC[5] = {FLAG, A, C_DISK, A^C_DISK, FLAG};
+	printf("Sending DISC flag\n");
+	unsigned char DISC[5] = {FLAG, A, C_DISC, A^C_DISC, FLAG};
 	int numBytesSent = write(fd, DISC, 5);
 
 	if(numBytesSent != 5) {
-		printf("Error sending DISK!\n");
+		printf("Error sending DISC!\n");
 		return -1;
 	}
 
@@ -84,111 +120,8 @@ int writeRR(int fd) {
 	return 0;
 }
 
-int waitForEmissorResponse(int fd, int resWanted, LinkLayer *link) {
-	//Estabilishing connection
-	char buf[255];
-	int connected = 0;
-	int resReceived = 0;
-	int res;
-
-	transmitterState current = start;
-
-	int j = 0;
-	for(; j <= link->numTransmissions; j++){
-		if(connected == 1)
-		break;
-
-		while(timer < 4 && connected == 0){
-			if(flag){
-				alarm(3);                 // activa alarme de 3s
-				flag=0;
-			}
-
-			res = read(fd,buf,1);     /* returns after 1 char have been input */
-			buf[res]=0;
-
-			if(resReceived == 0)
-			switch(current){
-				case start:
-					if(buf[0] == FLAG)
-						current = flagRCV;
-					break;
-				case flagRCV:
-					if(buf[0] == A)
-						current = aRCV;
-					else if(buf[0] != FLAG)
-						current = start;
-					break;
-				case aRCV:
-					if(resWanted == 0) {
-						if(buf[0] == C_UA)
-							current = cRCV;
-						else if(buf[0] != FLAG)
-							current = start;
-						else
-							current = flagRCV;
-					} else if(resWanted == 1) {
-							if(nr == 0) {
-								if(buf[0] == C_RR0)
-									current = cRCV;
-								else if(buf[0] != FLAG)
-									current = start;
-								else
-									current = flagRCV;
-							} else if(nr == 1) {
-								if(buf[0] == C_RR1)
-									current = cRCV;
-								else if(buf[0] != FLAG)
-									current = start;
-								else
-									current = flagRCV;
-							}
-					}
-					break;
-				case cRCV:
-					if(resWanted == 0) {
-						if(buf[0] == (A^C_UA))
-							current = BCC;
-						else if(buf[0] != FLAG)
-							current = start;
-						else
-							current = flagRCV;
-					} else if(resWanted == 1) {
-						if(nr == 0) {
-							if(buf[0] == (A^C_RR0))
-								current = BCC;
-							else if(buf[0] != FLAG)
-								current = start;
-							else
-								current = flagRCV;
-						} else if (nr == 1) {
-							if(buf[0] == (A^C_RR1))
-								current = BCC;
-							else if(buf[0] != FLAG)
-								current = start;
-							else
-								current = flagRCV;
-						}
-					}
-					break;
-				case BCC:
-					if(buf[0] == FLAG)
-						current = stop;
-					else
-						current = start;
-				case stop:
-					connected = 1;
-					flag = 1;
-					printf("Transmitter has received the answer from the emiiter!\n");
-					break;
-				default: break;
-			}
-		}
-	}
-	return 0;
-}
-
 int waitForSET(int fd) {
+	printf("Waiting for Set flag...\n");
 	char buf[255];
 	int res;
 	int setReceived = 0;
@@ -234,7 +167,7 @@ int waitForSET(int fd) {
 			case stopSET:
 			setReceived = 1;
 			STOP = TRUE;
-			printf("Recebeu SET!\n");
+			printf("Set received!\n");
 			break;
 			default: break;
 		}
@@ -242,17 +175,166 @@ int waitForSET(int fd) {
 	return 0;
 }
 
-int connectTransmitter(int fd, LinkLayer * link) {
-	(void) signal(SIGALRM, atende);
-	writeSET(fd);
-	waitForEmissorResponse(fd, 0, link);
-	return 0;
+int waitForResponse(int fd, int flagType, LinkLayer *link) {
+	switch(flagType){
+		case 0: printf("Waiting for UA flag...\n"); break;
+		case 1: printf("Waiting for RR flag...\n"); break;
+		case 2: printf("Waiting for DISC flag...\n"); break;
+	}
+	char buf[255];
+	int connected = 0;
+	int resReceived = 0;
+	int res;
+
+	transmitterState current = start;
+
+	int j = 0;
+	for(; j <= link->numTransmissions; j++){
+		if(connected == 1)
+			break;
+
+		while(timer < 4 && connected == 0){
+			if(flag){
+				alarm(3);                 // activa alarme de 3s
+				flag=0;
+			}
+
+			res = read(fd,buf,1);     /* returns after 1 char have been input */
+			buf[res]=0;
+
+			if(resReceived == 0){
+				switch(current){
+					case start:{
+						if(buf[0] == FLAG)
+							current = flagRCV;
+						break;
+					}
+
+					case flagRCV:{
+						if(buf[0] == A)
+							current = aRCV;
+						else if(buf[0] != FLAG)
+							current = start;
+						break;
+					}
+
+					case aRCV:{
+						switch(flagType){
+							case 0:{
+								if(buf[0] == C_UA)
+									current = cRCV;
+								else if(buf[0] != FLAG)
+									current = start;
+								else
+									current = flagRCV;
+								break;
+							}
+							case 1:{
+								if(nr == 0) {
+									if(buf[0] == C_RR0)
+										current = cRCV;
+									else if(buf[0] != FLAG)
+										current = start;
+									else
+										current = flagRCV;
+								} else if(nr == 1) {
+									if(buf[0] == C_RR1)
+										current = cRCV;
+									else if(buf[0] != FLAG)
+										current = start;
+									else
+										current = flagRCV;
+								}
+								break;
+							}
+							case 2:{
+								if(buf[0] == C_DISC)
+									current = cRCV;
+								else if(buf[0] != FLAG)
+									current = start;
+								else
+									current = flagRCV;
+								break;
+							}
+							break;
+						}
+						break;
+					}
+
+					case cRCV:{
+						switch(flagType){
+							case 0:{
+								if(buf[0] == (A^C_UA))
+									current = BCC;
+								else if(buf[0] != FLAG)
+									current = start;
+								else
+									current = flagRCV;
+								break;
+							}
+							case 1:{
+								if(nr == 0) {
+									if(buf[0] == (A^C_RR0))
+										current = BCC;
+									else if(buf[0] != FLAG)
+										current = start;
+									else
+										current = flagRCV;
+								} else if (nr == 1) {
+									if(buf[0] == (A^C_RR1))
+										current = BCC;
+									else if(buf[0] != FLAG)
+										current = start;
+									else
+										current = flagRCV;
+								}
+								break;
+							}
+							case 2:{
+								if(buf[0] == (A^C_DISC))
+									current = BCC;
+								else if(buf[0] != FLAG)
+									current = start;
+								else
+									current = flagRCV;
+								break;
+							}
+							default: break;
+						}
+						break;
+					}
+
+					case BCC:{
+						if(buf[0] == FLAG)
+							current = stop;
+						else
+							current = start;
+					}
+
+					case stop:{
+						connected = 1;
+						flag = 1;
+						switch(flagType){
+							case 0: printf("UA flag received!\n"); break;
+							case 1: printf("RR flag received!\n"); break;
+							case 2: printf("DISC flag received!\n"); break;
+						}
+						return 0;
+					}
+					default: break;
+				}
+			}
+		}
+	}
+	return -1;
 }
 
-int connectReceiver(int fd) {
-	waitForSET(fd);
-	writeUA(fd);
-	return 0;
+
+//organizar a partir daqui 
+
+void atende(){
+	flag=1;
+	timer++;
 }
 
 int calculateBCC2(char *frame, int length) {
@@ -422,19 +504,4 @@ char* byteDestuffing(char* frame, int length){
 		counter++;
 	}
 	return trama;
-}
-
-int disconnectTransmitter(int fd, LinkLayer * link) {
-	(void) signal(SIGALRM, atende);
-	writeDISC(fd);
-	waitForEmissorResponse(fd, 0, link);
-	writeUA(fd);
-	return 0;
-}
-
-int disconnectReceiver(int fd, LinkLayer * link) {
-	waitForEmissorResponse(fd, 0, link);
-	writeDISC(fd);
-	waitForEmissorResponse(fd, 0, link);
-	return 0;
 }

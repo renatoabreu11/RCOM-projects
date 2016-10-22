@@ -21,11 +21,11 @@ int startConnection(ApplicationLayer *app){
 
   if(app->status == 0){
     connectTransmitter(app->fileDescriptor, app->link);
-    sendData(app);
+    //sendData(app);
     disconnectTransmitter(app->fileDescriptor, app->link);
   }else{
     connectReceiver(app->fileDescriptor);
-    getData(app);
+    //getData(app);
     disconnectReceiver(app->fileDescriptor, app->link);
   }
   return 1;
@@ -66,7 +66,7 @@ int llopen(ApplicationLayer *app){
   newtio.c_lflag = 0;
 
   newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-  newtio.c_cc[VMIN]     = 100;   /* blocking read until 1 char received */
+  newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
 
 /*
   VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -80,7 +80,8 @@ int llopen(ApplicationLayer *app){
      return -1;
   }
 
-  printf("New termios structure set\n");
+  app->fileDescriptor = fd;
+  printf("Serial port descriptor: %d\n", app->fileDescriptor);
 
   return 1;
 }
@@ -204,11 +205,9 @@ void concatPackages(char *startPackage, char* dataPackage, char*endPackage, Appl
    llwrite(newBuffer, strlen(newBuffer), app);
 }
 
-
->>>>>>> f221552ad5beb3c5dcf06cc052818fb851a1223d
 int llwrite(char * buffer, int length, ApplicationLayer* app){
   writeDataFrame(app->fileDescriptor, buffer, length);
-  waitForEmissorResponse(app->fileDescriptor, 1, app->link);
+  waitForResponse(app->fileDescriptor, 1, app->link);
  	return 1;
 }
 
