@@ -3,7 +3,7 @@
 ApplicationLayer *app;
 int frameCounter = 1;
 
-int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout){
+int InitApplication(int port, int status, char * name, char *baudRate, int packageSize, int retries, int timeout){
   app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
     return -1;
@@ -30,9 +30,13 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     }
   }
 
-  estabilishConnection(app->fileDescriptor);
+  if(estabilishConnection(app->fileDescriptor) == -1){
+    return -1;
+  }
   startConnection();
-  endConnection(app->fileDescriptor);
+  if(endConnection(app->fileDescriptor) == -1){
+    return -1;
+  }
 
   ret = llclose(app->fileDescriptor);
   if(ret == -1){
@@ -64,7 +68,7 @@ int sendData(){
 
   int check = sendControl(CONTROL_START);
   if(check == -1){
-    printf("%s\n", "Error sending START control packet");
+    printf("%s\n", "Error sending START packet");
     llclose(app->fileDescriptor);
     return -1;
   }
@@ -83,7 +87,8 @@ int sendData(){
 
   check = sendControl(CONTROL_END);
   if(check == -1){
-    printf("%s\n", "Error sending END control packet");
+    printf("%s\n", "Error sending END packet");
+    llclose(app->fileDescriptor);
     return -1;
   }
   return 1;

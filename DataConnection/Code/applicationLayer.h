@@ -18,7 +18,6 @@
 #define FILE_NAME 0x01
 #define BytesPerPacket 400
 #define L2 0x00
-#define SIZECODIFIED 0x04
 #define RECEIVER 1
 #define TRANSMITTER 0
 
@@ -44,7 +43,7 @@ typedef struct ApplicationLayer{
  * @param  timeout     [description]
  * @return             [description]
  */
-int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout);
+int InitApplication(int port, int status, char * name, char *baudRate, int packageSize, int retries, int timeout);
 
 /**
  * [startConnection description]

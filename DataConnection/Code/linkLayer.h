@@ -24,13 +24,14 @@
 
 typedef struct LinkLayer {
 	char port[20];
-	int baudRate;
+	char baudRate;
 	unsigned int sequenceNumber;
 	unsigned int timeout;
 	unsigned int numTransmissions;
 	char frame[MAX_SIZE];
 	int frameLength;
 	int status;
+	int ns;
 	struct termios oldtio, newtio;
 }LinkLayer;
 
@@ -44,7 +45,7 @@ typedef struct LinkLayer {
  * @param  timeout     [description]
  * @return             [description]
  */
-int initLinkLayer(int port, int baudRate, int packageSize, int retries, int timeout);
+int initLinkLayer(int port, char *baudRate, int packageSize, int retries, int timeout);
 
 /**
  * [llopen description]
@@ -126,21 +127,21 @@ int waitForResponse(int fd, int flagType, LinkLayer *link);
  * @param
  * @return
  */
-int countPatterns(char* frame, int length);
+int countPatterns(char** frame, int length);
 
 /**
  * @param
  * @param
  * @return
  */
-char* byteStuffing(char* frame, int length);
+int byteStuffing(char** frame, int length);
 
 /**
  * @param
  * @param
  * @return
  */
-char* byteDestuffing(char* frame, int length);
+int byteDestuffing(char** frame, int length);
 
 
 //comentar e organizar a partir daqui
@@ -165,7 +166,7 @@ int calculateBCC2(char *frame, int length);
  * @param
  * @return
  */
-int writeDataFrame(int fd, char *buffer, int length);
+char * createDataFrame(char *buffer, int length);
 
 /**
  * Stores byteRead into the frame, thus storing the image
@@ -187,7 +188,7 @@ int readDataInformation(char *frame, char byteRead, char *BCC2);
  * @param
  * @return
  */
-char readDataFrame(int fd, char *frame);
+char *readDataFrame(int fd, char *frame);
 
 /**
  * 

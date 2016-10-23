@@ -10,15 +10,101 @@
 #include <errno.h>   // for errno
 #include <limits.h>  // for INT_MAX
 
-#define _POSIX_SOURCE 1 /* POSIX compliant source */
-#define FALSE 0
-#define TRUE 1
-
 #include "applicationLayer.h"
+
+int baudRate = 38400;
+int packageLength = 1024;
+int retries = 3;
+int timeOut = 3;
+
+void clear_stream(FILE *in){
+	int ch;
+
+	clearerr(in);
+
+	do
+	ch = getc(in);
+	while (ch != '\n' && ch != EOF);
+
+	clearerr(in);
+}
+
+int chooseParameter(char *type){
+	char parameter[30];
+  	sprintf(parameter,"\nEnter %s: ", type);
+	int value;
+    
+    printf("%s", parameter);
+    fflush(stdout);
+    
+    while (scanf("%d", &value) != 1) {
+        clear_stream(stdin);
+        printf("Invalid integer. Please try again: ");
+        fflush(stdout);
+    }
+	return value;
+}
+
+void checkBaudRateValue(){
+	if(baudRate != 4800 || baudRate != 9600 || baudRate != 19200 || baudRate != 38400 || baudRate != 57600){
+		printf("%s\n", "Invalid baud rate value. B38400 defined as default");
+		baudRate = 38400;
+	}
+}
+
+void showMenu(int port, int status){
+	char option;
+
+	printf("\n1 - Start Connection\n"); 
+	printf("2 - Baud rate\n"); 
+	printf("3 - Data package length\n"); 
+	printf("4 - Retries\n"); 
+	printf("5 - Time out\n"); 
+	printf("6 - Quit\n");  
+	printf("\nChoose your option: ");
+
+  	do{ 
+  		scanf("%c",&option);
+
+ 		switch(option){
+  		case'1': 
+  			printf("\n\n");
+  			char baud[10];
+  			sprintf(baud,"B%d", baudRate);
+  			InitApplication(port, status, "../pinguim.gif", baud, packageLength, retries, timeOut);
+  			break;
+  		case'2':
+  			baudRate = chooseParameter("Baud rate");
+  			checkBaudRateValue();
+  			clear_stream(stdin);
+  			showMenu(port, status);
+  			return;
+  		case'3':
+  			packageLength = chooseParameter("Data package Length");
+  			clear_stream(stdin);
+  			showMenu(port, status);
+  			return;
+  		case'4':
+  			retries = chooseParameter("number of retries");
+  			clear_stream(stdin);
+  			showMenu(port, status);
+  			return;
+  		case'5':
+  			timeOut = chooseParameter("Time out interval");
+  			clear_stream(stdin);
+  			showMenu(port, status);
+  			return;
+  		case'6':
+  			exit(0);
+  		default:
+     	 	printf("invalid input, please type again:");
+  		}
+  }while(option<'1' ||option>'6');
+}
 
 int main(int argc, char **argv) {
 	if ( (argc < 3) ||
-	((strcmp("0", argv[1])!=0) &&
+		((strcmp("0", argv[1])!=0) &&
 	(strcmp("1", argv[1])!=0) ) ||
 	((strcmp("0", argv[2])!=0) &&
 	(strcmp("1", argv[2])!=0) )) {
@@ -34,6 +120,7 @@ int main(int argc, char **argv) {
 
 	if (errno != 0 || *p != '\0' || conv > INT_MAX) {
 		printf("Invalid port value. It must be a valid int.\n");
+		return -1;
 	} else {
 		port = conv;
 	}
@@ -42,46 +129,11 @@ int main(int argc, char **argv) {
 	conv = strtol(argv[2], &c, 10);
 	if (errno != 0 || *c != '\0' || conv > INT_MAX) {
 		printf("Invalid status value. It must be a valid int.\n");
+		return -1;
 	} else {
 		status = conv;
 	}
 
-	char option;
-	int baudRate = 0;
-	int packageLength = 0;
-	int retries = 0;
-	int timeOut = 0;
-
-	printf("1 - Start Connection\n"); 
-	printf("2 - Baud rate\n"); 
-	printf("3 - Data package length\n"); 
-	printf("4 - Retries\n"); 
-	printf("5 - Time out\n"); 
-	printf("6 - Quit\n");  
-	printf("Choose your option:\n");
-
-  	do{ 
-  		scanf(" %c",&option);
-
- 		switch(option){
-  		case'1': 
-  			printf("\n\n");
-  			InitApplication(port, status, "../pinguim.gif", baudRate, packageLength, retries, timeOut);
-  			break;
-  		case'2':
-  			break;
-  		case'3':
-  			break;
-  		case'4':
-  			break;
-  		case'5':
-  			break;
-  		case'6':
-  			exit(0);
-  		default:
-     	 	printf("invalid input, please type again:");
-  		}
-  }while(option<'1' ||option>'6');
-
+	showMenu(port, status);
 	return 1;
 }
