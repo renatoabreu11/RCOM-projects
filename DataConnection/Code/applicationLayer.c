@@ -38,7 +38,7 @@ int InitApplication(int port, int status, char * name, char *baudRate, int packa
     llclose(app->fileDescriptor);
     return -1;
   }
-  if(endConnection(app->fileDescriptor) == -1){
+  /*if(endConnection(app->fileDescriptor) == -1){
     llclose(app->fileDescriptor);
     return -1;
   }
@@ -46,7 +46,7 @@ int InitApplication(int port, int status, char * name, char *baudRate, int packa
   ret = llclose(app->fileDescriptor);
   if(ret == -1){
     return -1;
-  }
+  }*/
   return 1;
 }
 
@@ -168,7 +168,9 @@ int receiveData(){
     return -1;
   }
 
-  FILE *file = fopen(app->fileName, "wb");
+  llclose(app->fileDescriptor);
+
+  /*FILE *file = fopen(app->fileName, "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
@@ -197,13 +199,13 @@ int receiveData(){
     printf("%s\n", "Error receiving END control packet");
     return -1;
   }
-
+*/
   return 1;
 }
 
 int receiveControl(int type){
   char * package = NULL;
-  if(llread(package, app->fileDescriptor) == -1)
+  if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
 
   int index = 0;
@@ -242,8 +244,7 @@ int receiveControl(int type){
 
 int receiveInformation(char *buffer, int *length){
   char * package = NULL;
-
-  if(llread(package, app->fileDescriptor) == -1)
+  if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
 
   int C = package[0];
