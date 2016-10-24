@@ -5,10 +5,11 @@
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
+int hasReadContol = 0;
 
 typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} transmitterState;
 typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;
-typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, DATAI, BCC2I, stopI} iState;
+typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, BCC2I, FLAGENDI, stopI} iState;
 
 LinkLayer *linkLayer;
 
@@ -97,8 +98,12 @@ int llwrite(char * buffer, int length, int fd){
 	return 1;
 }
 
-int llread(char * buffer, int fd){
-	return 1;
+int llread(char * buffer, int fd, int length){
+	//If control was never read
+	if(hasReadContol == 0) {
+		buffer = readDataFrame(fd, buffer);
+		byteDestuffing(&buffer, length);
+	}
 }
 
 int llclose(int fd){
@@ -255,7 +260,7 @@ char * createDataFrame(char *buffer, int length) {
 	memcpy(&frame[4], buffer, length + patterns);
 	frame[5 + length] = BCC2;
 	frame[6 + length] = FLAG;
-	
+
 	return frame;
 }
 
@@ -502,96 +507,110 @@ int byteDestuffing(char** frame, int length){
 	return newLength;
 }
 
-//organizar a partir daqui 
+//organizar a partir daqui
 
 void atende(){
 	flag=1;
 	timer++;
 }
 
-int readDataInformation(char *frame, char byteRead, char *BCC2) {
-	//if(byteRead == )
+int readDataInformation(char *frame, char byteRead) {
+	if(byteRead == FLAG)
+		return 0;
+	else
+		strcat(frame, byteRead);
+
+	return 1;
 }
 
-char * readDataFrame(int fd, char *frame) {
+char *readDataFrame(int fd, char *frame) {
 	//char *xorBCC;
 	int res;
 	char byteRead;
-	char *BCC2;
+	char bcc2;
 	int decide;
 	int connected;
 	iState current = startI;
 	STOP = FALSE;
+	char *packageControl = malloc(linkLayer->frameLength);
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
 
 		switch(current){
-			case start:
+			case startI:
 				if(byteRead == FLAG)
-					current = flagRCV;
+					current = flagRCVI;
 				break;
-			case flagRCV:
+			case flagRCVI:
 				if(byteRead == A)
-					current = aRCV;
+					current = aRCVI;
 				else if(byteRead != FLAG)
-					current = start;
+					current = startI;
 				break;
-			case aRCV:
+			case aRCVI:
 				if(linkLayer->ns == 0) {
 					if(byteRead == C_I0)
-						current = cRCV;
+						current = cRCVI;
 					else if(byteRead != FLAG)
-						current = start;
+						current = startI;
 					else
-						current = flagRCV;
+						current = flagRCVI;
 				} else if(linkLayer->ns == 1) {
 					if(byteRead == C_I1)
-						current = cRCV;
+						current = cRCVI;
 					else if(byteRead != FLAG)
-						current = start;
+						current = startI;
 					else
-						current = flagRCV;
-				}
+						current = flagRCVI;
 				break;
-			case cRCV:
+			case cRCVI:
 				if(linkLayer->ns == 0) {
 					if(byteRead == (A^C_I0))
-						current = BCC;
+						current = BCC1I;
 					else if(byteRead != FLAG)
-						current = start;
+						current = startI;
 					else
-						current = flagRCV;
+						current = flagRCVI;
 				} else if(linkLayer->ns == 1) {
 					if(byteRead == (A^C_I1))
-						current = BCC;
+						current = BCC1I;
 					else if(byteRead != FLAG)
-						current = start;
+						current = startI;
 					else
-						current = flagRCV;
+						current = flagRCVI;
 				}
 				break;
-			case BCC:
-				decide = readDataInformation(frame, byteRead, BCC2);
-			case stop:
+			case BCC1I:
+				decide = readDataInformation(packageControl, byteRead);
+				bcc2 ^= byteRead;
+				if(decide == 0) {
+					current = BCC2I;
+				}
+				break;
+			case BCC2I:
+				if(byteRead == bcc2)
+					current = FLAGENDI;
+				break;
+			case FLAGENDI:
+				if(byteRead == FLAG)
+					current = stopI;
+			case stopI:
 				connected = 1;
 				flag = 1;
-				printf("Receiver has received all the data!\n");
+				return packageControl;
 				break;
 			default: break;
 		}
 	}
+}
+return packageControl;
 
-	return frame;
 }
 
 void updateNsNr() {
-	/*if(ns == 0) {
-	ns = 1;
-	nr = 0;
-}
-else {
-ns = 0;
-nr = 1;
-}*/
+	if(linkLayer->ns == 0)
+		linkLayer->ns = 1;
+  else
+		linkLayer->ns = 0;
 }

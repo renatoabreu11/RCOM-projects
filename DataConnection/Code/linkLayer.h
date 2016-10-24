@@ -78,7 +78,7 @@ int llwrite(char * buffer, int length, int fd);
  * @param  buffer [description]
  * @return        [description]
  */
-int llread(char * buffer, int fd);
+int llread(char * buffer, int fd, int length);
 
 /**
  * [llclose description]
@@ -157,7 +157,7 @@ int byteDestuffing(char** frame, int length);
 
 
 /**
- * 
+ *
  */
 void atende();
 
@@ -184,7 +184,7 @@ char * createDataFrame(char *buffer, int length);
  * @param
  * @return
  */
-int readDataInformation(char *frame, char byteRead, char *BCC2);
+int readDataInformation(char *frame, char byteRead);
 
 /**
  * State machine to read the I frame
@@ -200,6 +200,6 @@ int readDataInformation(char *frame, char byteRead, char *BCC2);
 char *readDataFrame(int fd, char *frame);
 
 /**
- * 
+ *
  */
 void updateNsNr();
