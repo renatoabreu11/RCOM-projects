@@ -7,7 +7,7 @@ int InitApplication(int port, int status, char * name, char *baudRate, int packa
   app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
     return -1;
-  
+
   initLinkLayer(port, baudRate, BytesPerPacket, retries, timeout);
   int ret = llopen(status, port);
   if(ret == -1){
@@ -220,7 +220,7 @@ int receiveControl(int type){
   for(; i < nParams; i++){
     char type = package[index++];
     unsigned char length = package[index++];
-    
+
     switch(type){
       case FILE_SIZE:
         buffer = (char *)malloc(length);

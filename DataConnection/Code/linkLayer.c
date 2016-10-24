@@ -98,12 +98,11 @@ int llwrite(char * buffer, int length, int fd){
 	return 1;
 }
 
-int llread(char * buffer, int fd, int length){
-	//If control was never read
-	if(hasReadContol == 0) {
-		buffer = readDataFrame(fd, buffer);
-		byteDestuffing(&buffer, length);
-	}
+int llread(char * buffer, int fd){
+	buffer = readDataFrame(fd, buffer);
+	byteDestuffing(&buffer, linkLayer->frameLength);
+
+	return 1;
 }
 
 int llclose(int fd){
@@ -326,7 +325,6 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 		case 2: printf("Waiting for DISC flag...\n"); break;
 	}
 	char buf[255];
-	int resReceived = 0;
 	int res;
 	timer = 1;
 
@@ -514,28 +512,25 @@ void atende(){
 	timer++;
 }
 
-int readDataInformation(char *frame, char byteRead) {
-	if(byteRead == FLAG)
-		return 0;
-	else
-		strcat(frame, byteRead);
-
+int readDataInformation(char *frame, char *byteRead) {
+	strcat(frame, byteRead);
 	return 1;
 }
 
 char *readDataFrame(int fd, char *frame) {
-	//char *xorBCC;
 	int res;
 	char byteRead;
+	char *p = byteRead;
 	char bcc2;
 	int decide;
-	int connected;
 	iState current = startI;
 	STOP = FALSE;
 	char *packageControl = malloc(linkLayer->frameLength);
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
+		if(res == -1)
+			return NULL;
 
 		switch(current){
 			case startI:
@@ -582,10 +577,11 @@ char *readDataFrame(int fd, char *frame) {
 				}
 				break;
 			case BCC1I:
-				decide = readDataInformation(packageControl, byteRead);
-				bcc2 ^= byteRead;
-				if(decide == 0) {
+				if(byteRead == FLAG)
 					current = BCC2I;
+				else {
+					decide = readDataInformation(packageControl, p);
+					bcc2 ^= byteRead;
 				}
 				break;
 			case BCC2I:
@@ -596,8 +592,6 @@ char *readDataFrame(int fd, char *frame) {
 				if(byteRead == FLAG)
 					current = stopI;
 			case stopI:
-				connected = 1;
-				flag = 1;
 				return packageControl;
 				break;
 			default: break;
