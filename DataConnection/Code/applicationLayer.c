@@ -83,7 +83,7 @@ int sendData(){
     printf("%s\n", dataField);
     check = sendInformation(dataField, bytesRead);
     if(check != 0){
-      //erro sending packet
+      return -1;
     }
     frameCounter++;
     memset(dataField, 0, BytesPerPacket);
@@ -132,9 +132,7 @@ int sendControl(int type){
     index++;
   }
   i = 0;
-  for(; i < packageLength; i++){
-    printf("%c\n", controlPackage[i]);
-  }
+
   if(llwrite(controlPackage, packageLength, app->fileDescriptor) == -1){
     free(controlPackage);
     return -1;

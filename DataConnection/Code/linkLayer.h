@@ -197,9 +197,9 @@ int readDataInformation(char *frame, char byteRead);
  * @param
  * @return
  */
-char *readDataFrame(int fd, char *frame);
+int readDataFrame(int fd, char *frame);
 
 /**
  *
  */
-void updateNsNr();
+void updateNs();

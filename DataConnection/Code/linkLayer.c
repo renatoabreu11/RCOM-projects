@@ -75,10 +75,13 @@ int llopen(int status, int port){
 }
 
 int llwrite(char * buffer, int length, int fd){
-	int newSize = length + 6 + countPatterns(&buffer, length);
+	int newSize = length + 7 + countPatterns(&buffer, length);
 	char *frame = malloc (newSize);
 	frame = createDataFrame(buffer, length);
-
+	/*int i = 0;
+	for(; i < newSize; i++){
+		printf("%c\n", frame[i]);
+	}*/
 	int bytesSent = write(fd, frame, newSize);
 	if(bytesSent != newSize){
 		printf("%s\n", "Error sending data packet");
@@ -224,7 +227,7 @@ int calculateBCC2(char *frame, int length) {
 
 char * createDataFrame(char *buffer, int length) {
 	int patterns = countPatterns(&buffer, length);
-	int newLength = length + 6 + patterns;
+	int newLength = length + 7 + patterns;
 	char *frame = malloc(newLength);
 
 	char C;
@@ -242,8 +245,8 @@ char * createDataFrame(char *buffer, int length) {
 	frame[2] = C;
 	frame[3] = BCC1;
 	memcpy(&frame[4], buffer, length + patterns);
-	frame[5 + length] = BCC2;
-	frame[6 + length] = FLAG;
+	frame[5 + length + patterns] = BCC2;
+	frame[6 + length + patterns] = FLAG;
 
 	return frame;
 }
@@ -309,7 +312,7 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 		case 1: printf("Waiting for RR flag...\n"); break;
 		case 2: printf("Waiting for DISC flag...\n"); break;
 	}
-	char buf[255];
+	unsigned char buf[255];
 	int res;
 	timer = 1;
 
@@ -322,6 +325,8 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 		}
 
 		res = read(fd,buf,1);     /* returns after 1 char have been input */
+		if(res > 0)
+			printf("%02X\n", buf[0]);
 		buf[res]=0;
 
 		switch(current){
@@ -351,16 +356,17 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 						break;
 					}
 					case 1:{
-						if(linkLayer->ns == 1) {
+						if(linkLayer->ns == 1){
 							if(buf[0] == C_RR0)
 								current = cRCV;
 							else if(buf[0] != FLAG)
 								current = start;
 							else
 								current = flagRCV;
-						} else if(linkLayer->ns == 0) {
-							if(buf[0] == C_RR1)
+						} else if(linkLayer->ns == 0){
+							if(buf[0] == C_RR1){
 								current = cRCV;
+							}
 							else if(buf[0] != FLAG)
 								current = start;
 							else
@@ -439,6 +445,10 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 					case 1: printf("RR flag received!\n"); break;
 					case 2: printf("DISC flag received!\n"); break;
 				}
+				if(flagType == 1){
+					printf("%s\n", "NS Received and updated");
+					updateNs();
+				}
 				return 1;
 			}
 			default: break;
@@ -497,11 +507,10 @@ void atende(){
 	timer++;
 }
 
-char *readDataFrame(int fd, char *frame) {
+int readDataFrame(int fd, char *frame) {
 	int res;
 	char byteRead;
 	char bcc2;
-	int decide;
 	iState current = startI;
 	STOP = FALSE;
 	int bytesCounter = 0;
@@ -510,7 +519,7 @@ char *readDataFrame(int fd, char *frame) {
 		res = read(fd, &byteRead, 1);
 		printf("Byte lido = %c\n", byteRead);
 		if(res == -1)
-			return NULL;
+			return -1;
 
 		switch(current){
 			case startI:
@@ -584,7 +593,7 @@ printf("Ending package read\n");
 return 1;
 }
 
-void updateNsNr() {
+void updateNs() {
 	if(linkLayer->ns == 0)
 		linkLayer->ns = 1;
   else
