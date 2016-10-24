@@ -5,11 +5,10 @@
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
-int hasReadContol = 0;
 
 typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} transmitterState;
 typedef enum {startSET, flagRCVSET, aRCVSET, cRCVSET, BCCSET, stopSET} setState;
-typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, BCC2I, FLAGENDI, stopI} iState;
+typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, BCC2I, stopI} iState;
 
 LinkLayer *linkLayer;
 
@@ -21,6 +20,7 @@ int initLinkLayer(int port, char *baudRate, int packageSize, int retries, int ti
 	linkLayer->timeout = timeout;
 	linkLayer->numTransmissions = retries;
 	linkLayer->frameLength = packageSize;
+	linkLayer->ns = 0;
 
 	return 1;
 }
@@ -52,7 +52,7 @@ int llopen(int status, int port){
   	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-  	linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+  	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-character timer unused */
   	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
 
 	/*
@@ -98,11 +98,19 @@ int llwrite(char * buffer, int length, int fd){
 	return 1;
 }
 
-int llread(char * buffer, int fd){
-	buffer = readDataFrame(fd, buffer);
+char *llread(int fd){
+	char *buffer = malloc(linkLayer->frameLength);
+
+	readDataFrame(fd, buffer);
 	byteDestuffing(&buffer, linkLayer->frameLength);
 
-	return 1;
+	//Sends RR
+	if(linkLayer->ns == 0)
+		sendSupervision(fd, C_RR1);
+	else
+		sendSupervision(fd, C_RR0);
+
+	return buffer;
 }
 
 int llclose(int fd){
@@ -191,7 +199,7 @@ int sendSupervision(int fd, unsigned char control){
 
 	frame[0] = FLAG;
 	frame[1] = A;
-	frame[2] = control;
+	frame[2] = (unsigned char) control;
 	frame[3] = A ^ frame[2];
 	frame[4] = FLAG;
 
@@ -201,29 +209,6 @@ int sendSupervision(int fd, unsigned char control){
 		printf("Error sending Control!\n");
 		return -1;
 	}
-	return 0;
-}
-
-int writeRR(int fd) {
-	unsigned char RR[5];
-	RR[0] = FLAG;
-	RR[1] = A;
-	if(linkLayer->ns == 1) {
-		RR[2] = 0x05;
-		RR[3] = (A^0x05);
-	} else {
-		RR[2] = 0x85;
-		RR[3] = (A^0x85);
-	}
-	RR[4] = FLAG;
-
-	int numBytesSent = write(fd, RR, 5);
-
-	if(numBytesSent != 5) {
-		printf("Error sending RR\n");
-		return -1;
-	}
-
 	return 0;
 }
 
@@ -512,23 +497,18 @@ void atende(){
 	timer++;
 }
 
-int readDataInformation(char *frame, char *byteRead) {
-	strcat(frame, byteRead);
-	return 1;
-}
-
 char *readDataFrame(int fd, char *frame) {
 	int res;
 	char byteRead;
-	char *p = byteRead;
 	char bcc2;
 	int decide;
 	iState current = startI;
 	STOP = FALSE;
-	char *packageControl = malloc(linkLayer->frameLength);
+	int bytesCounter = 0;
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
+		printf("Byte lido = %c\n", byteRead);
 		if(res == -1)
 			return NULL;
 
@@ -577,29 +557,31 @@ char *readDataFrame(int fd, char *frame) {
 				}
 				break;
 			case BCC1I:
-				if(byteRead == FLAG)
+				if(byteRead == bcc2) {
 					current = BCC2I;
+					printf("Detected bcc2\n");
+				}
 				else {
-					decide = readDataInformation(packageControl, p);
+					strcat(frame, &byteRead);
 					bcc2 ^= byteRead;
+					bytesCounter++;
 				}
 				break;
 			case BCC2I:
-				if(byteRead == bcc2)
-					current = FLAGENDI;
-				break;
-			case FLAGENDI:
-				if(byteRead == FLAG)
+				if(byteRead == FLAG) {
 					current = stopI;
-			case stopI:
-				return packageControl;
+					STOP = TRUE;
+					char a = '\0';
+					strcat(frame, &a);
+				}
 				break;
 			default: break;
 		}
 	}
 }
-return packageControl;
 
+printf("Ending package read\n");
+return 1;
 }
 
 void updateNsNr() {

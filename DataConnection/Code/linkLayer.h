@@ -78,7 +78,7 @@ int llwrite(char * buffer, int length, int fd);
  * @param  buffer [description]
  * @return        [description]
  */
-int llread(char * buffer, int fd);
+char *llread(int fd);
 
 /**
  * [llclose description]
@@ -184,7 +184,7 @@ char * createDataFrame(char *buffer, int length);
  * @param
  * @return
  */
-int readDataInformation(char *frame, char *byteRead);
+int readDataInformation(char *frame, char byteRead);
 
 /**
  * State machine to read the I frame
