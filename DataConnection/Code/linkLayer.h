@@ -1,4 +1,13 @@
-#include "libraries.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
 
 #define MAX_TRIES 3
 #define MAX_SIZE 10

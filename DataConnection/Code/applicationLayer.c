@@ -31,10 +31,15 @@ int InitApplication(int port, int status, char * name, char *baudRate, int packa
   }
 
   if(estabilishConnection(app->fileDescriptor) == -1){
+    llclose(app->fileDescriptor);
     return -1;
   }
-  startConnection();
+  if(startConnection() == -1){
+    llclose(app->fileDescriptor);
+    return -1;
+  }
   if(endConnection(app->fileDescriptor) == -1){
+    llclose(app->fileDescriptor);
     return -1;
   }
 
@@ -75,6 +80,7 @@ int sendData(){
 
   char* dataField = malloc(BytesPerPacket);
   while ((bytesRead = fread(dataField, 1, BytesPerPacket, file)) > 0){
+    printf("%s\n", dataField);
     check = sendInformation(dataField, bytesRead);
     if(check != 0){
       //erro sending packet
@@ -125,7 +131,14 @@ int sendControl(int type){
     controlPackage[index] = app->fileName[i];
     index++;
   }
-  llwrite(controlPackage, packageLength, app->fileDescriptor);
+  i = 0;
+  for(; i < packageLength; i++){
+    printf("%c\n", controlPackage[i]);
+  }
+  if(llwrite(controlPackage, packageLength, app->fileDescriptor) == -1){
+    free(controlPackage);
+    return -1;
+  }
   free(controlPackage);
   return 1;
 }
@@ -141,7 +154,10 @@ int sendInformation(char * buffer, int length){
   for(; i < length; i++){
     dataPackage[i+4] = buffer[i];
   }
-  llwrite(dataPackage, length, app->fileDescriptor);
+  if(llwrite(dataPackage, length, app->fileDescriptor) == -1){
+    free(dataPackage);
+    return -1;
+  }
   free(dataPackage);
   return 1;
 }
