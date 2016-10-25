@@ -137,6 +137,7 @@ int sendControl(int type){
     printf("%c\n", controlPackage[i]);
   }
   printf("Control package length: %d\n", packageLength);
+
   if(llwrite(controlPackage, packageLength, app->fileDescriptor) == -1){
     free(controlPackage);
     return -1;
@@ -209,6 +210,12 @@ int receiveControl(int type){
   char * package = NULL;
   if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
+
+  printf("Tamanho do package = %lu\n", strlen(package));
+
+  /*int j = 0;
+  for(; j < strlen(package); j++)
+    printf(package[j]);*/
 
   int index = 0;
   type = package[index];

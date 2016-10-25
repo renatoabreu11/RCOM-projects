@@ -30,16 +30,16 @@ int llopen(int status, int port){
 	int fd;
 
 	/*
- 	 Open serial port device for reading and writing and not as controlling tty
- 	 because we don't want to get killed if linenoise sends CTRL-C.
+	Open serial port device for reading and writing and not as controlling tty
+	because we don't want to get killed if linenoise sends CTRL-C.
 	*/
-	fd = open(linkLayer->port, O_RDWR | O_NOCTTY);
+	fd = open(linkLayer->port, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (fd <0) {
 		perror(linkLayer->port);
 		return -1;
 	}
 
-  	if ( tcgetattr(fd, &linkLayer->oldtio) == -1) { /* save current port settings */
+	if ( tcgetattr(fd, &linkLayer->oldtio) == -1) { /* save current port settings */
 		perror("tcgetattr");
 		return -1;
 	}
@@ -49,15 +49,15 @@ int llopen(int status, int port){
 	linkLayer->newtio.c_iflag = IGNPAR;
 	linkLayer->newtio.c_oflag = 0;
 
-  	/* set input mode (non-canonical, no echo,...) */
+	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-  	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-character timer unused */
-  	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
+	linkLayer->newtio.c_cc[VTIME]    = 1;   /* inter-character timer unused */
+	linkLayer->newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
 
 	/*
-  	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
-  	leitura do(s) próximo(s) caracter(es)
+	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
+	leitura do(s) próximo(s) caracter(es)
 	*/
 
 	tcflush(fd, TCIOFLUSH);
@@ -80,38 +80,46 @@ int llwrite(char * buffer, int length, int fd){
 	frame = createDataFrame(buffer, length);
 	/*int i = 0;
 	for(; i < newSize; i++){
-		printf("%c\n", frame[i]);
-	}*/
-	int bytesSent = write(fd, frame, newSize);
-	if(bytesSent != newSize){
-		printf("%s\n", "Error sending data packet");
-		return -1;
-	}
-	int nTry = 1;
-	int messageReceived = 0;
-	while(nTry <= linkLayer->numTransmissions && !messageReceived){
-		if(waitForResponse(fd, 1, linkLayer) == -1){
-			nTry++;
-		} else messageReceived = 1;
-	}
-	if(!messageReceived){
-			printf("%s\n", "Error receiving packet confirmation!");
-			return -1;
-	}
-	return 1;
+	printf("%c\n", frame[i]);
+}*/
+int bytesSent = write(fd, frame, newSize);
+if(bytesSent != newSize){
+	printf("%s\n", "Error sending data packet");
+	return -1;
+}
+int nTry = 1;
+int messageReceived = 0;
+while(nTry <= linkLayer->numTransmissions && !messageReceived){
+	if(waitForResponse(fd, 1, linkLayer) == -1){
+		nTry++;
+	} else messageReceived = 1;
+}
+if(!messageReceived){
+	printf("%s\n", "Error receiving packet confirmation!");
+	return -1;
+}
+return 1;
 }
 
 char *llread(int fd){
 	char *buffer = malloc(linkLayer->frameLength);
 
 	readDataFrame(fd, buffer);
-	byteDestuffing(&buffer, linkLayer->frameLength);
+
+	buffer = realloc(buffer, strlen(buffer) - 1);
+
+	byteDestuffing(&buffer, strlen(buffer));
 
 	//Sends RR
 	if(linkLayer->ns == 0)
-		sendSupervision(fd, C_RR1);
+	sendSupervision(fd, C_RR1);
 	else
-		sendSupervision(fd, C_RR0);
+	sendSupervision(fd, C_RR0);
+
+/*	printf("Comeca:\n");
+	int i = 0;
+	for(; i < strlen(buffer); i++)
+		printf(buffer[i]);*/
 
 	return buffer;
 }
@@ -220,7 +228,7 @@ int calculateBCC2(char *frame, int length) {
 	char BCC2;
 
 	for(; i < length; i++)
-		BCC2 ^= frame[i];
+	BCC2 ^= frame[i];
 
 	return BCC2;
 }
@@ -232,9 +240,9 @@ char * createDataFrame(char *buffer, int length) {
 
 	char C;
 	if(linkLayer->ns == 0)
-		C = C_I0;
+	C = C_I0;
 	else
-		C = C_I1;
+	C = C_I1;
 	char BCC1 = A ^ C;
 	char BCC2 = calculateBCC2(buffer, length);
 
@@ -326,21 +334,21 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 
 		res = read(fd,buf,1);     /* returns after 1 char have been input */
 		if(res > 0)
-			printf("%02X\n", buf[0]);
+		printf("%02X\n", buf[0]);
 		buf[res]=0;
 
 		switch(current){
 			case start:{
 				if(buf[0] == FLAG)
-					current = flagRCV;
+				current = flagRCV;
 				break;
 			}
 
 			case flagRCV:{
 				if(buf[0] == A)
-					current = aRCV;
+				current = aRCV;
 				else if(buf[0] != FLAG)
-					current = start;
+				current = start;
 				break;
 			}
 
@@ -348,39 +356,39 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 				switch(flagType){
 					case 0:{
 						if(buf[0] == C_UA)
-							current = cRCV;
+						current = cRCV;
 						else if(buf[0] != FLAG)
-							current = start;
+						current = start;
 						else
-							current = flagRCV;
+						current = flagRCV;
 						break;
 					}
 					case 1:{
 						if(linkLayer->ns == 1){
 							if(buf[0] == C_RR0)
-								current = cRCV;
+							current = cRCV;
 							else if(buf[0] != FLAG)
-								current = start;
+							current = start;
 							else
-								current = flagRCV;
+							current = flagRCV;
 						} else if(linkLayer->ns == 0){
 							if(buf[0] == C_RR1){
 								current = cRCV;
 							}
 							else if(buf[0] != FLAG)
-								current = start;
+							current = start;
 							else
-								current = flagRCV;
+							current = flagRCV;
 						}
 						break;
 					}
 					case 2:{
 						if(buf[0] == C_DISC)
-							current = cRCV;
+						current = cRCV;
 						else if(buf[0] != FLAG)
-							current = start;
+						current = start;
 						else
-							current = flagRCV;
+						current = flagRCV;
 						break;
 					}
 					break;
@@ -392,38 +400,38 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 				switch(flagType){
 					case 0:{
 						if(buf[0] == (A^C_UA))
-							current = BCC;
+						current = BCC;
 						else if(buf[0] != FLAG)
-							current = start;
+						current = start;
 						else
-							current = flagRCV;
+						current = flagRCV;
 						break;
 					}
 					case 1:{
 						if(linkLayer->ns == 1) {
 							if(buf[0] == (A^C_RR0))
-								current = BCC;
+							current = BCC;
 							else if(buf[0] != FLAG)
-								current = start;
+							current = start;
 							else
-								current = flagRCV;
+							current = flagRCV;
 						} else if (linkLayer->ns == 0) {
 							if(buf[0] == (A^C_RR1))
-								current = BCC;
+							current = BCC;
 							else if(buf[0] != FLAG)
-								current = start;
+							current = start;
 							else
-								current = flagRCV;
+							current = flagRCV;
 						}
 						break;
 					}
 					case 2:{
 						if(buf[0] == (A^C_DISC))
-							current = BCC;
+						current = BCC;
 						else if(buf[0] != FLAG)
-							current = start;
+						current = start;
 						else
-							current = flagRCV;
+						current = flagRCV;
 						break;
 					}
 					default: break;
@@ -433,9 +441,9 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 
 			case BCC:{
 				if(buf[0] == FLAG)
-					current = stop;
+				current = stop;
 				else
-					current = start;
+				current = start;
 			}
 
 			case stop:{
@@ -462,7 +470,7 @@ int countPatterns(char** frame, int length){
 	int i = 0;
 	for(; i < length; i++){
 		if((*frame)[i] == ESCAPE || (*frame)[i] == FLAG)
-			patterns++;
+		patterns++;
 	}
 	return patterns;
 }
@@ -509,93 +517,134 @@ void atende(){
 
 int readDataFrame(int fd, char *frame) {
 	int res;
-	char byteRead;
-	char bcc2;
+	unsigned char byteRead;
+	unsigned char bcc2;
 	iState current = startI;
 	STOP = FALSE;
-	int bytesCounter = 0;
+	char *stringByteRead = malloc(1);
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
 		printf("Byte lido = %c\n", byteRead);
 		if(res == -1)
-			return -1;
+		return -1;
 
 		switch(current){
 			case startI:
-				if(byteRead == FLAG)
-					current = flagRCVI;
-				break;
+			if(byteRead == FLAG)
+			current = flagRCVI;
+			break;
 			case flagRCVI:
-				if(byteRead == A)
-					current = aRCVI;
-				else if(byteRead != FLAG)
-					current = startI;
-				break;
+			if(byteRead == A)
+			current = aRCVI;
+			else if(byteRead != FLAG)
+			current = startI;
+			break;
 			case aRCVI:
-				if(linkLayer->ns == 0) {
-					if(byteRead == C_I0)
-						current = cRCVI;
-					else if(byteRead != FLAG)
-						current = startI;
-					else
-						current = flagRCVI;
-				} else if(linkLayer->ns == 1) {
-					if(byteRead == C_I1)
-						current = cRCVI;
-					else if(byteRead != FLAG)
-						current = startI;
-					else
-						current = flagRCVI;
+			if(linkLayer->ns == 0) {
+				if(byteRead == C_I0)
+				current = cRCVI;
+				else if(byteRead != FLAG)
+				current = startI;
+				else
+				current = flagRCVI;
+			} else if(linkLayer->ns == 1) {
+				if(byteRead == C_I1)
+				current = cRCVI;
+				else if(byteRead != FLAG)
+				current = startI;
+				else
+				current = flagRCVI;
 				break;
-			case cRCVI:
+				case cRCVI:
 				if(linkLayer->ns == 0) {
 					if(byteRead == (A^C_I0))
-						current = BCC1I;
+					current = BCC1I;
 					else if(byteRead != FLAG)
-						current = startI;
+					current = startI;
 					else
-						current = flagRCVI;
+					current = flagRCVI;
 				} else if(linkLayer->ns == 1) {
 					if(byteRead == (A^C_I1))
-						current = BCC1I;
+					current = BCC1I;
 					else if(byteRead != FLAG)
-						current = startI;
+					current = startI;
 					else
-						current = flagRCVI;
+					current = flagRCVI;
 				}
 				break;
-			case BCC1I:
+				case BCC1I:
 				if(byteRead == bcc2) {
 					current = BCC2I;
 					printf("Detected bcc2\n");
 				}
 				else {
-					strcat(frame, &byteRead);
+					if(byteRead == 0x00) {
+						char a = ' ';
+						strcat(frame, &a);
+					} else {
+						sprintf(stringByteRead, "%c", byteRead);
+						strcat(frame, stringByteRead);
+					}
+
 					bcc2 ^= byteRead;
-					bytesCounter++;
+					break;
 				}
 				break;
-			case BCC2I:
+				case BCC2I:
 				if(byteRead == FLAG) {
 					current = stopI;
 					STOP = TRUE;
 					char a = '\0';
 					strcat(frame, &a);
+					printf("Detectou FLAG!\n");
+				} else if(byteRead == bcc2) {
+					sprintf(stringByteRead, "%c", byteRead);
+					strcat(frame, stringByteRead);
+					strcat(frame, stringByteRead);
+					bcc2 ^= byteRead;
+					bcc2 ^= byteRead;
+					printf("Detectou bcc2. Stand by no mesmo state!\n");
+				} else {
+					sprintf(stringByteRead, "%c", bcc2);
+					strcat(frame, stringByteRead);
+					bcc2 ^= bcc2;
+					sprintf(stringByteRead, "%c", byteRead);
+					strcat(frame, stringByteRead);
+					bcc2 ^= byteRead;
+					current = BCC1I;
+					printf("Erro de detecao: voltando para BCC1!\n");
 				}
 				break;
-			default: break;
+				default: break;
+			}
 		}
 	}
+
+	printf("Ending package read\n");
+
+	free(stringByteRead);
+	return 1;
 }
 
-printf("Ending package read\n");
-return 1;
+void saveDataToBuffer(char *frame, char *stringByteRead, char byteRead, int method) {
+	switch(method) {
+		case 0:
+		if(byteRead == 0x00) {
+			char a = ' ';
+			strcat(frame, &a);
+		} else {
+			sprintf(stringByteRead, "%c", byteRead);
+			strcat(frame, stringByteRead);
+		}
+		break;
+
+	}
 }
 
 void updateNs() {
 	if(linkLayer->ns == 0)
-		linkLayer->ns = 1;
-  else
-		linkLayer->ns = 0;
+	linkLayer->ns = 1;
+	else
+	linkLayer->ns = 0;
 }
