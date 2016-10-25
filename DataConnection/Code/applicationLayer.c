@@ -171,9 +171,7 @@ int receiveData(){
     return -1;
   }
 
-  llclose(app->fileDescriptor);
-
-  /*FILE *file = fopen(app->fileName, "wb");
+  FILE *file = fopen(app->fileName, "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
@@ -202,51 +200,83 @@ int receiveData(){
     printf("%s\n", "Error receiving END control packet");
     return -1;
   }
-*/
+
   return 1;
 }
 
-int receiveControl(int type){
-  char * package = NULL;
+int receiveControl(int control){
+  unsigned char * package = NULL;
   if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
 
-  printf("Tamanho do package no receive control = %lu\n", strlen(package));
-
-  /*int j = 0;
-  for(; j < strlen(package); j++)
-    printf(package[j]);*/
+  printf("Package recebido\n");
+  int j;
+  for(j = 0; j < strlen(package); j++)
+    printf("%c\n", package[j]);
 
   int index = 0;
-  type = package[index];
-  if(type == CONTROL_START){
+  control = package[index++];
+  if(control == CONTROL_START){
     printf("%s\n", "Control Start received\n");
-  }else if(type == CONTROL_END){
+  }else if(control == CONTROL_END){
     printf("%s\n", "Control end received\n");
   } else return -1;
-  index++;
 
   int nParams = 2; int i = 0;
   char *buffer;
   for(; i < nParams; i++){
-    char type = package[index++];
-    unsigned char length = package[index++];
+    int type = package[index++] - '0';
+    printf("Type = %d\n", type);
+    int length = package[index++] - '0';
+    printf("Length = %d\n", length );
 
-    switch(type){
+    /*char *a = malloc(1);
+    sprintf(a, "%c", type);
+
+    char *fileSizeAux = malloc(1);
+    sprintf(fileSizeAux, "%u", FILE_SIZE);
+    char *fileNameAux = malloc(1);
+    sprintf(fileNameAux, "%u", FILE_NAME);*/
+
+    switch(type) {
       case FILE_SIZE:
+        printf("FODASSE 2 2 2 2 2 \n");
         buffer = (char *)malloc(length);
+        printf("Before memcpy\n");
         memcpy(buffer, &package[index], length);
-        sscanf(buffer, "%u", &(app->fileSize));
+        printf("Em memcpy\n");
+        //sscanf(buffer, "%u", &(app->fileSize));
+        printf("Em sscanf\n");
+        printf("%u\n", app->fileSize );
         break;
       case FILE_NAME:
+        printf("FODASSE\n");
         buffer = (char *)malloc(length+1);
         memcpy(buffer, &package[index++], length);
         buffer[length] = '\0';
         strcpy(app->fileName, buffer);
+        printf("%s\n", app->fileName);
         break;
-      default:
-        return -1;
+      default: break;
     }
+  /*  if(strcmp(a, fileSizeAux) == 0) {
+      printf("FODASSE 2 2 2 2 2 \n");
+      buffer = (char *)malloc(length);
+      printf("Before memcpy\n");
+      memcpy(buffer, &package[index], length);
+      printf("Em memcpy\n");
+      //sscanf(buffer, "%u", &(app->fileSize));
+      printf("Em sscanf\n");
+      printf("%u\n", app->fileSize );
+    } else if(strcmp(a, fileNameAux) == 0){
+      printf("FODASSE\n");
+      buffer = (char *)malloc(length+1);
+      memcpy(buffer, &package[index++], length);
+      buffer[length] = '\0';
+      strcpy(app->fileName, buffer);
+      printf("%s\n", app->fileName);
+    }*/
+
   }
   return 1;
 }
