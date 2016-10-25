@@ -52,8 +52,9 @@ int llopen(int status, int port){
 	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-character timer unused */
-	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
+	//Valor que da = 2
+	linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+	linkLayer->newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
 
 	/*
 	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -107,16 +108,18 @@ char *llread(int fd){
 	readDataFrame(fd, buffer);
 	byteDestuffing(&buffer, strlen(buffer));
 
+	/*printf("Comeca:\n");
+	int i = 0;
+	for(; i < strlen(buffer); i++)
+		printf(buffer[i]);*/
+
 	//Sends RR
 	if(linkLayer->ns == 0)
 	sendSupervision(fd, C_RR1);
 	else
 	sendSupervision(fd, C_RR0);
 
-/*	printf("Comeca:\n");
-	int i = 0;
-	for(; i < strlen(buffer); i++)
-		printf(buffer[i]);*/
+	updateNs();
 
 	return buffer;
 }
@@ -207,7 +210,7 @@ int sendSupervision(int fd, char control){
 
 	frame[0] = FLAG;
 	frame[1] = A;
-	frame[2] = (char) control;
+	frame[2] = control;
 	frame[3] = A ^ frame[2];
 	frame[4] = FLAG;
 
@@ -317,7 +320,7 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 		case 1: printf("Waiting for RR flag...\n"); break;
 		case 2: printf("Waiting for DISC flag...\n"); break;
 	}
-	char buf[255];
+	unsigned char buf[255];
 	int res;
 	timer = 1;
 
@@ -602,6 +605,7 @@ int readDataFrame(int fd, char *frame) {
 					bcc2 ^= byteRead;
 					bcc2 ^= byteRead;
 					printf("Detectou bcc2. Stand by no mesmo state!\n");
+					printf("Adicionado byte %c\n", byteRead);
 				} else {
 					sprintf(stringByteRead, "%c", bcc2);
 					strcat(frame, stringByteRead);
@@ -610,6 +614,7 @@ int readDataFrame(int fd, char *frame) {
 					strcat(frame, stringByteRead);
 					bcc2 ^= byteRead;
 					current = BCC1I;
+					printf("Adicionado byte %c\n", byteRead);
 					//printf("Erro de detecao: voltando para BCC1!\n");
 				}
 				break;
