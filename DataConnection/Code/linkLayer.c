@@ -597,14 +597,14 @@ int readDataFrame(int fd, char *frame) {
 				if(byteRead == FLAG) {
 					current = stopI;
 					STOP = TRUE;
-					printf("Detectou FLAG!\n");
+					//printf("Detectou FLAG!\n");
 				} else if(byteRead == bcc2) {
 					sprintf(stringByteRead, "%c", byteRead);
 					strcat(frame, stringByteRead);
 					strcat(frame, stringByteRead);
 					bcc2 ^= byteRead;
 					bcc2 ^= byteRead;
-					printf("Detectou bcc2. Stand by no mesmo state!\n");
+					//printf("Detectou bcc2. Stand by no mesmo state!\n");
 					printf("Adicionado byte %c\n", byteRead);
 				} else {
 					sprintf(stringByteRead, "%c", bcc2);
@@ -623,7 +623,6 @@ int readDataFrame(int fd, char *frame) {
 		}
 	}
 
-	printf("Ending package read\n");
 	free(stringByteRead);
 	return 1;
 }

@@ -16,7 +16,7 @@
 #define CONTROL_END 0x03
 #define FILE_SIZE 0x00
 #define FILE_NAME 0x01
-#define BytesPerPacket 400
+#define BytesPerPacket 10
 #define L2 0x00
 #define RECEIVER 1
 #define TRANSMITTER 0

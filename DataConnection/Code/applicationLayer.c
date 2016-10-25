@@ -180,7 +180,8 @@ int receiveData(){
 
   int bytesRead = 0;
   while (bytesRead < 10968) {
-    char* buffer = NULL;
+    //Change this HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    char* buffer = malloc(1000);
     int length = 0;
 
     printf("Starting to receive information\n");
@@ -263,33 +264,27 @@ int receiveControl(int control){
 
 int receiveInformation(char *buffer, int *length){
   char * package = NULL;
-
-  printf("Starting llread\n");
   if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
 
-  printf("Stoped llread\n");
-
-  printf("Checking CONTROL_DATA...\n");
   int C = package[0];
   if(C != CONTROL_DATA){
     printf("%s\n", "wrong C flag ");
     return -1;
   }
-  printf("Checked CONTROL_DATA...\n");
 
-  printf("Checking N\n");
-  int N = package[1];
+  int N = package[1] - '0';
   if(N != frameCounter){
     return -1;
   }
-  printf("Checked N\n");
 
   int l2 = package[2];
   int l1 = package[3];
 
   *length = 256 * l2 + l1;
+  printf("HEY\n");
   memcpy(buffer, &package[4], *length);
+  printf("NO! :O\n");
 
   /*int i;
   for(i = 0; i < length; i++)
