@@ -205,7 +205,7 @@ int receiveData(){
 }
 
 int receiveControl(int control){
-  unsigned char * package = NULL;
+  char * package = NULL;
   if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
 

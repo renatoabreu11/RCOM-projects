@@ -12,7 +12,7 @@ typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, BCC2I, stopI} iState;
 
 LinkLayer *linkLayer;
 
-int initLinkLayer(int port, unsigned char *baudRate, int packageSize, int retries, int timeout) {
+int initLinkLayer(int port, char *baudRate, int packageSize, int retries, int timeout) {
 	linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	sprintf(linkLayer->port ,"/dev/ttyS%d", port);
 	linkLayer->baudRate = *baudRate;
@@ -52,8 +52,8 @@ int llopen(int status, int port){
 	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-unsigned character timer unused */
-	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 unsigned char received */
+	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-character timer unused */
+	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
 
 	/*
 	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -74,9 +74,9 @@ int llopen(int status, int port){
 	return fd;
 }
 
-int llwrite(unsigned  char * buffer, int length, int fd){
+int llwrite(char * buffer, int length, int fd){
 	int newSize = length + 7 + countPatterns(&buffer, length);
-	unsigned  char *frame = malloc (newSize);
+	char *frame = malloc (newSize);
 	frame = createDataFrame(buffer, length);
 	/*int i = 0;
 	for(; i < newSize; i++){
@@ -101,8 +101,8 @@ if(!messageReceived){
 return 1;
 }
 
-unsigned  char *llread(int fd){
-	unsigned  char *buffer = malloc(linkLayer->frameLength);
+char *llread(int fd){
+	char *buffer = malloc(linkLayer->frameLength);
 
 	readDataFrame(fd, buffer);
 	byteDestuffing(&buffer, strlen(buffer));
@@ -202,12 +202,12 @@ int endConnection(int fd){
 	return 1;
 }
 
-int sendSupervision(int fd, unsigned  char control){
-	unsigned  char frame[5];
+int sendSupervision(int fd, char control){
+	char frame[5];
 
 	frame[0] = FLAG;
 	frame[1] = A;
-	frame[2] = (unsigned  char) control;
+	frame[2] = (char) control;
 	frame[3] = A ^ frame[2];
 	frame[4] = FLAG;
 
@@ -220,9 +220,9 @@ int sendSupervision(int fd, unsigned  char control){
 	return 0;
 }
 
-int calculateBCC2(unsigned  char *frame, int length) {
+int calculateBCC2(char *frame, int length) {
 	int i = 0;
-	unsigned char BCC2;
+	char BCC2;
 
 	for(; i < length; i++)
 	BCC2 ^= frame[i];
@@ -230,18 +230,18 @@ int calculateBCC2(unsigned  char *frame, int length) {
 	return BCC2;
 }
 
-unsigned  char * createDataFrame(unsigned  char *buffer, int length) {
+char * createDataFrame(char *buffer, int length) {
 	int patterns = countPatterns(&buffer, length);
 	int newLength = length + 7 + patterns;
-	unsigned  char *frame = malloc(newLength);
+	char *frame = malloc(newLength);
 
-	unsigned char C;
+	char C;
 	if(linkLayer->ns == 0)
 	C = C_I0;
 	else
 	C = C_I1;
-	unsigned char BCC1 = A ^ C;
-	unsigned char BCC2 = calculateBCC2(buffer, length);
+	char BCC1 = A ^ C;
+	char BCC2 = calculateBCC2(buffer, length);
 
 	byteStuffing(&buffer, length);
 
@@ -258,13 +258,13 @@ unsigned  char * createDataFrame(unsigned  char *buffer, int length) {
 
 int waitForSET(int fd) {
 	printf("Waiting for Set flag...\n");
-	unsigned char buf[255];
+	char buf[255];
 	int res;
 	int setReceived = 0;
 	setState current = startSET;
 
 	while (STOP==FALSE) {       /* loop for input */
-		res = read(fd,buf,1);     /* returns after 1 unsigned char have been input */
+		res = read(fd,buf,1);     /* returns after 1 char have been input */
 		buf[res]=0;               /* so we can printf... */
 
 		if(setReceived == 0)
@@ -317,7 +317,7 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 		case 1: printf("Waiting for RR flag...\n"); break;
 		case 2: printf("Waiting for DISC flag...\n"); break;
 	}
-	unsigned char buf[255];
+	char buf[255];
 	int res;
 	timer = 1;
 
@@ -329,7 +329,7 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 			flag=0;
 		}
 
-		res = read(fd,buf,1);     /* returns after 1 unsigned char have been input */
+		res = read(fd,buf,1);     /* returns after 1 char have been input */
 		if(res > 0)
 		printf("%02X\n", buf[0]);
 		buf[res]=0;
@@ -462,7 +462,7 @@ int waitForResponse(int fd, int flagType, LinkLayer *link) {
 	return -1;
 }
 
-int countPatterns(unsigned char** frame, int length){
+int countPatterns(char** frame, int length){
 	int patterns = 0;
 	int i = 0;
 	for(; i < length; i++){
@@ -472,7 +472,7 @@ int countPatterns(unsigned char** frame, int length){
 	return patterns;
 }
 
-int byteStuffing(unsigned char** frame, int length) {
+int byteStuffing(char** frame, int length) {
 	int patterns = countPatterns(frame, length);
 	int newLength = length + patterns;
 	*frame = realloc(*frame, newLength);
@@ -489,7 +489,7 @@ int byteStuffing(unsigned char** frame, int length) {
 	return newLength;
 }
 
-int byteDestuffing(unsigned char** frame, int length){
+int byteDestuffing(char** frame, int length){
 	int patterns = countPatterns(frame, length);
 
 	if(patterns == 0)
@@ -514,13 +514,13 @@ void atende(){
 	timer++;
 }
 
-int readDataFrame(int fd, unsigned char *frame) {
+int readDataFrame(int fd, char *frame) {
 	int res;
-	unsigned  char byteRead;
-	unsigned  char bcc2;
+	char byteRead;
+	char bcc2;
 	iState current = startI;
 	STOP = FALSE;
-	unsigned char *stringByteRead = malloc(1);
+	char *stringByteRead = malloc(1);
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
@@ -579,7 +579,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 				}
 				else {
 					if(byteRead == 0x00) {
-						unsigned char a = ' ';
+						char a = ' ';
 						strcat(frame, &a);
 					} else {
 						sprintf(stringByteRead, "%c", byteRead);

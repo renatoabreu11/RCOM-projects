@@ -32,12 +32,12 @@
 #define FLAG 0x7e
 
 typedef struct LinkLayer {
-	unsigned char port[20];
-	unsigned char baudRate;
-	unsigned char int sequenceNumber;
-	unsigned char int timeout;
-	unsigned char int numTransmissions;
-	unsigned char frame[MAX_SIZE];
+	char port[20];
+	char baudRate;
+	unsigned int sequenceNumber;
+	unsigned int timeout;
+	unsigned int numTransmissions;
+	char frame[MAX_SIZE];
 	int frameLength;
 	int status;
 	int ns;
@@ -54,7 +54,7 @@ typedef struct LinkLayer {
  * @param  timeout     [description]
  * @return             [description]
  */
-int initLinkLayer(int port, unsigned char *baudRate, int packageSize, int retries, int timeout);
+int initLinkLayer(int port, char *baudRate, int packageSize, int retries, int timeout);
 
 /**
  * [llopen description]
@@ -71,14 +71,14 @@ int llopen(int status, int port);
  * @param  fd     [description]
  * @return        [description]
  */
-int llwrite(unsigned char * buffer, int length, int fd);
+int llwrite(char * buffer, int length, int fd);
 
 /**
  * [llread description]
  * @param  buffer [description]
  * @return        [description]
  */
-unsigned char *llread(int fd);
+char *llread(int fd);
 
 /**
  * [llclose description]
@@ -107,7 +107,7 @@ int endConnection(int fd);
  * @param  control [description]
  * @return         [description]
  */
-int sendSupervision(int fd, unsigned char unsigned char control);
+int sendSupervision(int fd, char control);
 
 /**
  * Writes, to file with descriptor fd, RR flag
@@ -136,21 +136,21 @@ int waitForResponse(int fd, int flagType, LinkLayer *link);
  * @param
  * @return
  */
-int countPatterns(unsigned char** frame, int length);
+int countPatterns(char** frame, int length);
 
 /**
  * @param
  * @param
  * @return
  */
-int byteStuffing(unsigned char** frame, int length);
+int byteStuffing(char** frame, int length);
 
 /**
  * @param
  * @param
  * @return
  */
-int byteDestuffing(unsigned char** frame, int length);
+int byteDestuffing(char** frame, int length);
 
 
 //comentar e organizar a partir daqui
@@ -167,7 +167,7 @@ void atende();
  * @param
  * @return
  */
-int calculateBCC2(unsigned char *frame, int length);
+int calculateBCC2(char *frame, int length);
 
 /**
  * @param
@@ -175,7 +175,7 @@ int calculateBCC2(unsigned char *frame, int length);
  * @param
  * @return
  */
-unsigned char * createDataFrame(unsigned char *buffer, int length);
+char * createDataFrame(char *buffer, int length);
 
 /**
  * Stores byteRead into the frame, thus storing the image
@@ -184,7 +184,7 @@ unsigned char * createDataFrame(unsigned char *buffer, int length);
  * @param
  * @return
  */
-int readDataInformation(unsigned char *frame, unsigned char byteRead);
+int readDataInformation(char *frame, char byteRead);
 
 /**
  * State machine to read the I frame
@@ -197,7 +197,7 @@ int readDataInformation(unsigned char *frame, unsigned char byteRead);
  * @param
  * @return
  */
-int readDataFrame(int fd, unsigned char *frame);
+int readDataFrame(int fd, char *frame);
 
 /**
  *
