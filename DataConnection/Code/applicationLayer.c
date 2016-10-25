@@ -112,7 +112,7 @@ int sendControl(int type){
   index++;
   controlPackage[index] = FILE_SIZE;
   index++;
-  controlPackage[index] = strlen(fileSizeStr);
+  controlPackage[index] = strlen(fileSizeStr) + '0';
 
   index++;
   int i = 0;
@@ -123,7 +123,7 @@ int sendControl(int type){
 
   controlPackage[index] = FILE_NAME;
   index++;
-  controlPackage[index] = app->nameLength;
+  controlPackage[index] = app->nameLength + '0';
   index++;
 
   i = 0;
@@ -131,8 +131,12 @@ int sendControl(int type){
     controlPackage[index] = app->fileName[i];
     index++;
   }
-  i = 0;
 
+  i = 0;
+  for(; i < packageLength; i++){
+    printf("%c\n", controlPackage[i]);
+  }
+  printf("Control package length: %d\n", packageLength);
   if(llwrite(controlPackage, packageLength, app->fileDescriptor) == -1){
     free(controlPackage);
     return -1;
@@ -144,7 +148,7 @@ int sendControl(int type){
 int sendInformation(char * buffer, int length){
   char *dataPackage = malloc(length + 4);
   dataPackage[0] = CONTROL_DATA;
-  dataPackage[1] = (unsigned char) frameCounter;
+  dataPackage[1] = frameCounter + '0';
   dataPackage[2] = length / 256;
   dataPackage[3] = length % 256;
 
