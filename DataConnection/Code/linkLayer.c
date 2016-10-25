@@ -33,7 +33,7 @@ int llopen(int status, int port){
 	Open serial port device for reading and writing and not as controlling tty
 	because we don't want to get killed if linenoise sends CTRL-C.
 	*/
-	fd = open(linkLayer->port, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	fd = open(linkLayer->port, O_RDWR | O_NOCTTY);
 	if (fd <0) {
 		perror(linkLayer->port);
 		return -1;
@@ -52,8 +52,8 @@ int llopen(int status, int port){
 	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-	linkLayer->newtio.c_cc[VTIME]    = 1;   /* inter-character timer unused */
-	linkLayer->newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
+	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-character timer unused */
+	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
 
 	/*
 	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -105,8 +105,7 @@ char *llread(int fd){
 	char *buffer = malloc(linkLayer->frameLength);
 
 	readDataFrame(fd, buffer);
-
-	buffer = realloc(buffer, strlen(buffer) - 1);
+	printf("Tamanho depois de sair = %lu\n", strlen(buffer));
 
 	byteDestuffing(&buffer, strlen(buffer));
 
@@ -494,6 +493,10 @@ int byteStuffing(char** frame, int length) {
 
 int byteDestuffing(char** frame, int length){
 	int patterns = countPatterns(frame, length);
+
+	if(patterns == 0)
+		return length;
+
 	int newLength = length - patterns;
 
 	int i = 0;
@@ -507,8 +510,6 @@ int byteDestuffing(char** frame, int length){
 	*frame = realloc(*frame, newLength);
 	return newLength;
 }
-
-//organizar a partir daqui
 
 void atende(){
 	flag=1;
@@ -525,9 +526,9 @@ int readDataFrame(int fd, char *frame) {
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
-		printf("Byte lido = %c\n", byteRead);
+		//printf("Byte lido = %c\n", byteRead);
 		if(res == -1)
-		return -1;
+			return -1;
 
 		switch(current){
 			case startI:
@@ -576,7 +577,7 @@ int readDataFrame(int fd, char *frame) {
 				case BCC1I:
 				if(byteRead == bcc2) {
 					current = BCC2I;
-					printf("Detected bcc2\n");
+					//printf("Detected bcc2\n");
 				}
 				else {
 					if(byteRead == 0x00) {
@@ -586,7 +587,7 @@ int readDataFrame(int fd, char *frame) {
 						sprintf(stringByteRead, "%c", byteRead);
 						strcat(frame, stringByteRead);
 					}
-
+					printf("Adicionado byte %c\n", byteRead);
 					bcc2 ^= byteRead;
 					break;
 				}
@@ -595,8 +596,6 @@ int readDataFrame(int fd, char *frame) {
 				if(byteRead == FLAG) {
 					current = stopI;
 					STOP = TRUE;
-					char a = '\0';
-					strcat(frame, &a);
 					printf("Detectou FLAG!\n");
 				} else if(byteRead == bcc2) {
 					sprintf(stringByteRead, "%c", byteRead);
@@ -613,7 +612,7 @@ int readDataFrame(int fd, char *frame) {
 					strcat(frame, stringByteRead);
 					bcc2 ^= byteRead;
 					current = BCC1I;
-					printf("Erro de detecao: voltando para BCC1!\n");
+					//printf("Erro de detecao: voltando para BCC1!\n");
 				}
 				break;
 				default: break;
@@ -622,24 +621,9 @@ int readDataFrame(int fd, char *frame) {
 	}
 
 	printf("Ending package read\n");
-
+	printf("Tamanho do package antes de sair da funcao = %lu\n", strlen(frame));
 	free(stringByteRead);
 	return 1;
-}
-
-void saveDataToBuffer(char *frame, char *stringByteRead, char byteRead, int method) {
-	switch(method) {
-		case 0:
-		if(byteRead == 0x00) {
-			char a = ' ';
-			strcat(frame, &a);
-		} else {
-			sprintf(stringByteRead, "%c", byteRead);
-			strcat(frame, stringByteRead);
-		}
-		break;
-
-	}
 }
 
 void updateNs() {

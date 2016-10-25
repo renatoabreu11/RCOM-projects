@@ -211,7 +211,7 @@ int receiveControl(int type){
   if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
 
-  printf("Tamanho do package = %lu\n", strlen(package));
+  printf("Tamanho do package no receive control = %lu\n", strlen(package));
 
   /*int j = 0;
   for(; j < strlen(package); j++)
