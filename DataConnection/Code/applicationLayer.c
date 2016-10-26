@@ -169,16 +169,17 @@ int receiveData(){
   }
 
   //CHANGE THIS HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  FILE *file = fopen("ping.gif", "wb");
+  FILE *file = fopen("hello.txt", "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
   }
 
+  char* buffer = malloc(1000);
   int bytesRead = 0;
-  while (bytesRead < 10968) {
+
+  while (bytesRead < 58) {
     //Change this HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    char* buffer = malloc(1000);
     int length = 0;
 
     printf("Starting to receive information\n");
@@ -194,7 +195,11 @@ int receiveData(){
     frameCounter++;
 
     fwrite(buffer, 1, length, file);
-    free(buffer);
+
+    printf("Starting freeing buffer!\n");
+    //free(buffer);
+    memset(buffer, 0, 1000);
+    printf("Freed buffer!\n");
 
     bytesRead += length;
   }
@@ -203,6 +208,8 @@ int receiveData(){
     printf("%s\n", "Error receiving END control packet");
     return -1;
   }
+
+  fclose(file);
 
   return 1;
 }
@@ -261,8 +268,11 @@ int receiveControl(int control){
 
 int receiveInformation(char *buffer, int *length){
   char * package = NULL;
+
   if((package = llread(app->fileDescriptor)) == NULL)
     return -1;
+
+  printf("N = %c\n", package[0]);
 
   int C = package[0];
   if(C != CONTROL_DATA){
@@ -275,13 +285,19 @@ int receiveInformation(char *buffer, int *length){
     return -1;
   }
 
-  int l2 = package[2];
-  int l1 = package[3];
+  int l2 = package[2] - '0';
+  int l1 = package[3] - '0';
+
+  printf("l2 = %d\n", l2);
+  printf("l1 = %d\n", l1);
 
   *length = 256 * l2 + l1;
-  printf("HEY\n");
+  printf("Length = %d\n\n\n", *length);
   memcpy(buffer, &package[4], *length);
-  printf("NO! :O\n");
+
+  printf("Tamanho do package = %lu\n", strlen(package));
+
+  free(package);
 
   /*int i;
   for(i = 0; i < length; i++)

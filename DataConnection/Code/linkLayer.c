@@ -103,9 +103,14 @@ return 1;
 }
 
 char *llread(int fd){
+	printf("Starting to create buffer\n");
 	char *buffer = malloc(linkLayer->frameLength);
+	printf("Finished creating buffer\n\n");
 
+	printf("Starting to read dataFrame\n");
 	readDataFrame(fd, buffer);
+	printf("Ended reading dataFrame\n");
+
 	byteDestuffing(&buffer, strlen(buffer));
 
 	/*printf("Comeca:\n");
@@ -523,7 +528,7 @@ int readDataFrame(int fd, char *frame) {
 	char bcc2;
 	iState current = startI;
 	STOP = FALSE;
-	char *stringByteRead = malloc(1);
+	char *stringByteRead = (char *) malloc(1);
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
@@ -623,7 +628,7 @@ int readDataFrame(int fd, char *frame) {
 		}
 	}
 
-	free(stringByteRead);
+	//free(stringByteRead);
 	return 1;
 }
 
