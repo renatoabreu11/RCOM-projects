@@ -15,7 +15,7 @@ LinkLayer *linkLayer;
 int initLinkLayer(int port, int baudrate, int packageSize, int retries, int timeout) {
 	linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	sprintf(linkLayer->port ,"/dev/ttyS%d", port);
-	sprintf(&linkLayer->baudRate,"B%d", baudrate);
+	linkLayer->baudRate = getBaud(baudrate);
 	linkLayer->sequenceNumber = 0;
 	linkLayer->timeout = timeout;
 	linkLayer->numTransmissions = retries;
@@ -45,8 +45,6 @@ int llopen(int status, int port){
 	}
 
 	bzero(&linkLayer->newtio, sizeof(linkLayer->newtio));
-	int a = linkLayer->baudRate - '0';
-	printf("%d\n", linkLayer->baudRate);
 	linkLayer->newtio.c_cflag = linkLayer->baudRate | CS8 | CLOCAL | CREAD;
 	linkLayer->newtio.c_iflag = IGNPAR;
 	linkLayer->newtio.c_oflag = 0;
@@ -639,4 +637,15 @@ void updateNs() {
 	linkLayer->ns = 1;
 	else
 	linkLayer->ns = 0;
+}
+
+int getBaud(int baudrate){
+	switch(baudrate){
+		case 4800: return B4800;
+		case 9600: return B9600;
+		case 19200: return B19200;
+		case 57600: return B57600;
+		case 115200: return B115200;
+	}
+	return B115200;
 }

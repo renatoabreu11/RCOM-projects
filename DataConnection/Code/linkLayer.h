@@ -32,7 +32,7 @@
 
 typedef struct LinkLayer {
 	char port[20];
-	char baudRate;
+	int baudRate;
 	unsigned int sequenceNumber;
 	unsigned int timeout;
 	unsigned int numTransmissions;
@@ -202,3 +202,7 @@ int readDataFrame(int fd, char *frame);
  *
  */
 void updateNs();
+
+/**
+*/
+int getBaud(int baudrate);
