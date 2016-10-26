@@ -8,7 +8,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
   if (app == NULL)
   return -1;
 
-  initLinkLayer(port, baudRate, BytesPerPacket, retries, timeout);
+  initLinkLayer(port, baudRate, packageSize, retries, timeout);
   int ret = llopen(status, port);
   if(ret == -1){
     return -1;
@@ -78,14 +78,15 @@ int sendData(){
     return -1;
   }
 
-  char* dataField = malloc(BytesPerPacket);
-  while ((bytesRead = fread(dataField, 1, BytesPerPacket, file)) > 0){
+
+  unsigned char* dataField = malloc(DataLength);
+  while ((bytesRead = fread(dataField, 1, DataLength, file)) > 0){
     check = sendInformation(dataField, bytesRead);
     if(check == -1){
       return -1;
     }
     frameCounter++;
-    memset(dataField, 0, BytesPerPacket);
+    memset(dataField, 0, DataLength);
   }
   fclose(file);
   free(dataField);
@@ -104,7 +105,7 @@ int sendControl(int type){
   sprintf(fileSizeStr,"%u",app->fileSize);
 
   int packageLength = app->nameLength + strlen(fileSizeStr) + 5;
-  char *controlPackage = malloc(packageLength);
+  unsigned char *controlPackage = malloc(packageLength);
 
   int index = 0;
   controlPackage[index] = type;
@@ -139,22 +140,20 @@ int sendControl(int type){
   return 1;
 }
 
-int sendInformation(char * buffer, int length){
-  char *dataPackage = malloc(length + 4);
+int sendInformation(unsigned char * buffer, int length){
+  int dataPacketLength = length + DataHeaders;
+  unsigned char *dataPackage = malloc(dataPacketLength);
   dataPackage[0] = CONTROL_DATA;
-  dataPackage[1] = frameCounter + '0';
-  dataPackage[2] = length / 256 + '0';
-  dataPackage[3] = length % 256 + '0';
+  dataPackage[1] = frameCounter ;
+  dataPackage[2] = length / 256 ;
+  dataPackage[3] = length % 256;
 
   int i = 0;
   for(; i < length; i++){
-    dataPackage[i+4] = buffer[i];
+    dataPackage[i+DataHeaders] = buffer[i];
   }
-  i = 0;
-  for(; i < length + 4; i++){
-    printf("%c\n", dataPackage[i]);
-  }
-  if(llwrite(dataPackage, length + 4, app->fileDescriptor) == -1){
+
+  if(llwrite(dataPackage, dataPacketLength, app->fileDescriptor) == -1){
     free(dataPackage);
     return -1;
   }
@@ -168,21 +167,18 @@ int receiveData(){
     return -1;
   }
 
-  //CHANGE THIS HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  FILE *file = fopen("Ping.gif", "wb");
+  FILE *file = fopen("pinguim.gif", "wb");
+  //FILE *file = fopen(app->fileName, "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
   }
 
-  char* buffer = malloc(1000);
+  unsigned char* buffer = malloc(DataLength);
   int bytesRead = 0;
 
-  while (bytesRead < 10968) {
-    //Change this HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  while (bytesRead < app->fileSize) {
     int length = 0;
-
-    printf("Starting to receive information\n");
 
     if (receiveInformation(buffer, &length) == -1) {
       printf("Error receiv data packet.\n");
@@ -190,18 +186,14 @@ int receiveData(){
       return 0;
     }
 
-    printf("Received 5 bytes with sucess!\n");
-
     frameCounter++;
 
     fwrite(buffer, 1, length, file);
 
-    printf("Starting freeing buffer!\n");
-    //free(buffer);
-    memset(buffer, 0, 1000);
-    printf("Freed buffer!\n");
+    memset(buffer, 0, DataLength);
 
     bytesRead += length;
+    printf("Bytes read: %d\n", bytesRead);
   }
 
   if(receiveControl(CONTROL_END) == -1){
@@ -215,61 +207,55 @@ int receiveData(){
 }
 
 int receiveControl(int control){
-  char *package = NULL;
-  if((package = llread(app->fileDescriptor)) == NULL)
-  return -1;
-
-  printf("Package recebido\n");
-  int j;
-  for(j = 0; j < strlen(package); j++)
-  printf("%c\n", package[j]);
+  unsigned char *package = malloc(DataLength);
+  int packageSize;
+  if((packageSize = llread(app->fileDescriptor, package)) == -1)
+    return -1;
+  int j = 0;
+  printf("Package size %d\n", packageSize);
+  for(; j < packageSize; j++){
+    printf("%c\n", package[j]);
+  }
 
   int index = 0;
   control = package[index++];
   if(control == CONTROL_START){
-    printf("%s\n", "Control Start received\n");
+    printf("%s\n", "Control Start received");
   }else if(control == CONTROL_END){
-    printf("%s\n", "Control end received\n");
+    printf("%s\n", "Control end received");
   } else return -1;
 
   int nParams = 2; int i = 0;
-  char *buffer;
+  int length;
+
   for(; i < nParams; i++){
-    unsigned int type = package[index++];
-    printf("Type = %u\n", type);
-    int length = package[index++] - '0';
-    printf("Length = %d\n", length );
-
+    int type = package[index++];
+    length = (char)package[index++] - '0';
     switch(type) {
-      case FILE_SIZE:
-      printf("FODASSE 2 2 2 2 2 \n");
-      buffer = (char *)malloc(length);
-      printf("Before memcpy\n");
-      memcpy(buffer, &package[index], length);
-      printf("Em memcpy\n");
-      //sscanf(buffer, "%u", &(app->fileSize));
-      printf("Em sscanf\n");
-      printf("%u\n", app->fileSize );
-      break;
-      case FILE_NAME:
-      printf("FODASSE\n");
-      buffer = (char *)malloc(length+1);
-      memcpy(buffer, &package[index++], length);
-      buffer[length] = '\0';
-      strcpy(app->fileName, buffer);
-      printf("%s\n", app->fileName);
-      break;
-      default: break;
-    }
-  }
-
+      case FILE_SIZE:{
+       char *fileLength = (char *)malloc(length);
+       memcpy(fileLength, &package[index], length);
+       sscanf(fileLength, "%u", &(app->fileSize));
+       free(fileLength);
+       index += length;
+       break;
+     }
+     case FILE_NAME:{
+       app->fileName = (char *)malloc(length+1);
+       memcpy(app->fileName, &package[index], length);
+       app->fileName[length] = '\0';
+       break;
+     }
+     default: break;
+   }
+ }
   return 1;
 }
 
-int receiveInformation(char *buffer, int *length){
-  char * package = NULL;
-
-  if((package = llread(app->fileDescriptor)) == NULL)
+int receiveInformation(unsigned char *buffer, int *length){
+  unsigned char *package = malloc(DataLength);
+  int packageSize;
+  if((packageSize = llread(app->fileDescriptor, package)) == -1)
     return -1;
 
   printf("N = %c\n", package[0]);
@@ -280,13 +266,14 @@ int receiveInformation(char *buffer, int *length){
     return -1;
   }
 
-  int N = package[1] - '0';
+  int N = package[1];
   if(N != frameCounter){
+    printf("%s\n", "neh");
     return -1;
   }
 
-  int l2 = package[2] - '0';
-  int l1 = package[3] - '0';
+  int l2 = package[2];
+  int l1 = package[3];
 
   printf("l2 = %d\n", l2);
   printf("l1 = %d\n", l1);
@@ -295,7 +282,7 @@ int receiveInformation(char *buffer, int *length){
   printf("Length = %d\n\n\n", *length);
   memcpy(buffer, &package[4], *length);
 
-  printf("Tamanho do package = %lu\n", strlen(package));
+  printf("Tamanho do package = %d\n", packageSize);
 
   free(package);
 

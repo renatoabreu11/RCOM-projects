@@ -70,14 +70,14 @@ int llopen(int status, int port);
  * @param  fd     [description]
  * @return        [description]
  */
-int llwrite(char * buffer, int length, int fd);
+int llwrite(unsigned char * buffer, int length, int fd);
 
 /**
  * [llread description]
  * @param  buffer [description]
  * @return        [description]
  */
-char *llread(int fd);
+int llread(int fd, unsigned char * package);
 
 /**
  * [llclose description]
@@ -106,7 +106,7 @@ int endConnection(int fd);
  * @param  control [description]
  * @return         [description]
  */
-int sendSupervision(int fd, char control);
+int sendSupervision(int fd, unsigned char control);
 
 /**
  * Writes, to file with descriptor fd, RR flag
@@ -128,28 +128,28 @@ int waitForSET(int fd);
  * @param link layer object
  * @return 0 if the flag has been read under the number of transmissions defined, -1 otherwise
  */
-int waitForResponse(int fd, int flagType, LinkLayer *link);
+int waitForResponse(int fd, int flagType);
 
 /**
  * @param
  * @param
  * @return
  */
-int countPatterns(char** frame, int length);
+int countPatterns(unsigned char** frame, int length);
 
 /**
  * @param
  * @param
  * @return
  */
-int byteStuffing(char** frame, int length);
+int byteStuffing(unsigned char** frame, int length);
 
 /**
  * @param
  * @param
  * @return
  */
-int byteDestuffing(char** frame, int length);
+int byteDestuffing(unsigned char** frame, int length);
 
 
 //comentar e organizar a partir daqui
@@ -166,7 +166,7 @@ void atende();
  * @param
  * @return
  */
-int calculateBCC2(char *frame, int length);
+char calculateBCC2(unsigned char *frame, int length);
 
 /**
  * @param
@@ -174,7 +174,7 @@ int calculateBCC2(char *frame, int length);
  * @param
  * @return
  */
-char * createDataFrame(char *buffer, int length);
+unsigned char * createDataFrame(unsigned char *buffer, int length);
 
 /**
  * Stores byteRead into the frame, thus storing the image
@@ -196,7 +196,7 @@ int readDataInformation(char *frame, char byteRead);
  * @param
  * @return
  */
-int readDataFrame(int fd, char *frame);
+int readDataFrame(int fd, unsigned char *frame);
 
 /**
  *

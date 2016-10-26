@@ -15,7 +15,8 @@
 #define CONTROL_END 0x03
 #define FILE_SIZE 0x00
 #define FILE_NAME 0x01
-#define BytesPerPacket 100
+#define DataLength 10
+#define DataHeaders 4
 #define L2 0x00
 #define RECEIVER 1
 #define TRANSMITTER 0
@@ -70,7 +71,7 @@ int sendControl(int type);
  * @param  length [description]
  * @return        [description]
  */
-int sendInformation(char * buffer, int length);
+int sendInformation(unsigned char * buffer, int length);
 
 /**
  * [receiveData description]
@@ -91,4 +92,4 @@ int receiveControl(int type);
  * @param  length [description]
  * @return        [description]
  */
-int receiveInformation(char *buffer, int *length);
+int receiveInformation(unsigned char *buffer, int *length);

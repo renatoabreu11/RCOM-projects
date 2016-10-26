@@ -12,8 +12,8 @@
 
 #include "applicationLayer.h"
 
-int baudRate = 115200;
-int packageLength = 1024;
+int baudRate = 57600;
+int packageLength = 150;
 int retries = 3;
 int timeOut = 3;
 
@@ -69,7 +69,7 @@ void showMenu(int port, int status){
  		switch(option){
   		case'1':
   			printf("\n\n");
-  			InitApplication(port, status, "../pinguim.txt", baudRate, packageLength, retries, timeOut);
+  			InitApplication(port, status, "../pinguim.gif", baudRate, packageLength, retries, timeOut);
   			break;
   		case'2':
   			baudRate = chooseParameter("Baud rate");
