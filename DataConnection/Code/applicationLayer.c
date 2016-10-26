@@ -3,7 +3,7 @@
 ApplicationLayer *app;
 int frameCounter = 1;
 
-int InitApplication(int port, int status, char * name, char *baudRate, int packageSize, int retries, int timeout){
+int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout){
   app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
   return -1;

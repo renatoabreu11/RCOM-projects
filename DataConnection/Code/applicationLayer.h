@@ -10,7 +10,6 @@
 #include "linkLayer.h"
 
 #define BUF_MAX 255
-#define BAUDRATE B38400
 #define CONTROL_DATA 0x01
 #define CONTROL_START 0x02
 #define CONTROL_END 0x03
@@ -43,7 +42,7 @@ typedef struct ApplicationLayer{
  * @param  timeout     [description]
  * @return             [description]
  */
-int InitApplication(int port, int status, char * name, char *baudRate, int packageSize, int retries, int timeout);
+int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout);
 
 /**
  * [startConnection description]

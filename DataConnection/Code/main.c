@@ -12,7 +12,7 @@
 
 #include "applicationLayer.h"
 
-int baudRate = 38400;
+int baudRate = 115200;
 int packageLength = 1024;
 int retries = 3;
 int timeOut = 3;
@@ -46,9 +46,9 @@ int chooseParameter(char *type){
 }
 
 void checkBaudRateValue(){
-	if(baudRate != 4800 || baudRate != 9600 || baudRate != 19200 || baudRate != 38400 || baudRate != 57600){
+	if(baudRate != 4800 || baudRate != 9600 || baudRate != 19200 || baudRate != 115200 || baudRate != 57600){
 		printf("%s\n", "Invalid baud rate value. B38400 defined as default");
-		baudRate = 38400;
+		baudRate = 115200;
 	}
 }
 
@@ -69,9 +69,7 @@ void showMenu(int port, int status){
  		switch(option){
   		case'1':
   			printf("\n\n");
-  			char baud[10];
-  			sprintf(baud,"B%d", baudRate);
-  			InitApplication(port, status, "../hello.txt", baud, packageLength, retries, timeOut);
+  			InitApplication(port, status, "../hello.txt", baudRate, packageLength, retries, timeOut);
   			break;
   		case'2':
   			baudRate = chooseParameter("Baud rate");

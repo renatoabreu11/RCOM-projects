@@ -12,10 +12,10 @@ typedef enum {startI, flagRCVI, aRCVI, cRCVI, BCC1I, BCC2I, stopI} iState;
 
 LinkLayer *linkLayer;
 
-int initLinkLayer(int port, char *baudRate, int packageSize, int retries, int timeout) {
+int initLinkLayer(int port, int baudrate, int packageSize, int retries, int timeout) {
 	linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	sprintf(linkLayer->port ,"/dev/ttyS%d", port);
-	linkLayer->baudRate = *baudRate;
+	sprintf(&linkLayer->baudRate,"B%d", baudrate);
 	linkLayer->sequenceNumber = 0;
 	linkLayer->timeout = timeout;
 	linkLayer->numTransmissions = retries;
@@ -45,6 +45,8 @@ int llopen(int status, int port){
 	}
 
 	bzero(&linkLayer->newtio, sizeof(linkLayer->newtio));
+	int a = linkLayer->baudRate - '0';
+	printf("%d\n", linkLayer->baudRate);
 	linkLayer->newtio.c_cflag = linkLayer->baudRate | CS8 | CLOCAL | CREAD;
 	linkLayer->newtio.c_iflag = IGNPAR;
 	linkLayer->newtio.c_oflag = 0;

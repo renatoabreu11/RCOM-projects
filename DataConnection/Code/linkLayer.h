@@ -11,7 +11,6 @@
 
 #define MAX_TRIES 3
 #define MAX_SIZE 10
-#define BAUDRATE B38400
 
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
@@ -54,7 +53,7 @@ typedef struct LinkLayer {
  * @param  timeout     [description]
  * @return             [description]
  */
-int initLinkLayer(int port, char *baudRate, int packageSize, int retries, int timeout);
+int initLinkLayer(int port, int baudRate, int packageSize, int retries, int timeout);
 
 /**
  * [llopen description]
