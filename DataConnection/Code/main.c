@@ -69,7 +69,7 @@ void showMenu(int port, int status){
  		switch(option){
   		case'1':
   			printf("\n\n");
-  			InitApplication(port, status, "../hello.txt", baudRate, packageLength, retries, timeOut);
+  			InitApplication(port, status, "../pinguim.txt", baudRate, packageLength, retries, timeOut);
   			break;
   		case'2':
   			baudRate = chooseParameter("Baud rate");

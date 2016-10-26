@@ -38,16 +38,16 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     llclose(app->fileDescriptor);
     return -1;
   }
-  /*if(endConnection(app->fileDescriptor) == -1){
-  llclose(app->fileDescriptor);
-  return -1;
-}
+  if(endConnection(app->fileDescriptor) == -1){
+    llclose(app->fileDescriptor);
+    return -1;
+  }
 
-ret = llclose(app->fileDescriptor);
-if(ret == -1){
-return -1;
-}*/
-return 1;
+  ret = llclose(app->fileDescriptor);
+  if(ret == -1){
+    return -1;
+  }
+  return 1;
 }
 
 int startConnection(){
@@ -169,7 +169,7 @@ int receiveData(){
   }
 
   //CHANGE THIS HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  FILE *file = fopen("hello.txt", "wb");
+  FILE *file = fopen("Ping.gif", "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
@@ -178,7 +178,7 @@ int receiveData(){
   char* buffer = malloc(1000);
   int bytesRead = 0;
 
-  while (bytesRead < 58) {
+  while (bytesRead < 10968) {
     //Change this HARD CODED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     int length = 0;
 
