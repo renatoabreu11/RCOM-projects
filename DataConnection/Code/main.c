@@ -33,10 +33,10 @@ int chooseParameter(char *type){
 	char parameter[30];
   	sprintf(parameter,"\nEnter %s: ", type);
 	int value;
-    
+
     printf("%s", parameter);
     fflush(stdout);
-    
+
     while (scanf("%d", &value) != 1) {
         clear_stream(stdin);
         printf("Invalid integer. Please try again: ");
@@ -55,23 +55,23 @@ void checkBaudRateValue(){
 void showMenu(int port, int status){
 	char option;
 
-	printf("\n1 - Start Connection\n"); 
-	printf("2 - Baud rate\n"); 
-	printf("3 - Data package length\n"); 
-	printf("4 - Retries\n"); 
-	printf("5 - Time out\n"); 
-	printf("6 - Quit\n");  
+	printf("\n1 - Start Connection\n");
+	printf("2 - Baud rate\n");
+	printf("3 - Data package length\n");
+	printf("4 - Retries\n");
+	printf("5 - Time out\n");
+	printf("6 - Quit\n");
 	printf("\nChoose your option: ");
 
-  	do{ 
+  	do{
   		scanf("%c",&option);
 
  		switch(option){
-  		case'1': 
+  		case'1':
   			printf("\n\n");
   			char baud[10];
   			sprintf(baud,"B%d", baudRate);
-  			InitApplication(port, status, "../pinguim.gif", baud, packageLength, retries, timeOut);
+  			InitApplication(port, status, "../hello.txt", baud, packageLength, retries, timeOut);
   			break;
   		case'2':
   			baudRate = chooseParameter("Baud rate");

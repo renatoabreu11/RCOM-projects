@@ -76,27 +76,27 @@ int llopen(int status, int port){
 }
 
 int llwrite(char * buffer, int length, int fd){
-	int newSize = length + 7 + countPatterns(&buffer, length);
+	int newSize = length + 6 + countPatterns(&buffer, length);
 	char *frame = malloc (newSize);
 	frame = createDataFrame(buffer, length);
-	/*int i = 0;
+/*	int i = 0;
 	for(; i < newSize; i++){
-	printf("%c\n", frame[i]);
-}*/
-int bytesSent = write(fd, frame, newSize);
-if(bytesSent != newSize){
-	printf("%s\n", "Error sending data packet");
-	return -1;
-}
-int nTry = 1;
-int messageReceived = 0;
-while(nTry <= linkLayer->numTransmissions && !messageReceived){
-	if(waitForResponse(fd, 1, linkLayer) == -1){
-		nTry++;
-	} else messageReceived = 1;
-}
-if(!messageReceived){
-	printf("%s\n", "Error receiving packet confirmation!");
+		printf("%c\n", frame[i]);
+	}*/
+	int bytesSent = write(fd, frame, newSize);
+	if(bytesSent != newSize){
+		printf("%s\n", "Error sending data packet");
+		return -1;
+	}
+	int nTry = 1;
+	int messageReceived = 0;
+	while(nTry <= linkLayer->numTransmissions && !messageReceived){
+		if(waitForResponse(fd, 1, linkLayer) == -1){
+			nTry++;
+		} else messageReceived = 1;
+	}
+	if(!messageReceived){
+		printf("%s\n", "Error receiving packet confirmation!");
 	return -1;
 }
 return 1;
@@ -235,7 +235,7 @@ int calculateBCC2(char *frame, int length) {
 
 char * createDataFrame(char *buffer, int length) {
 	int patterns = countPatterns(&buffer, length);
-	int newLength = length + 7 + patterns;
+	int newLength = length + 6 + patterns;
 	char *frame = malloc(newLength);
 
 	char C;
@@ -253,8 +253,8 @@ char * createDataFrame(char *buffer, int length) {
 	frame[2] = C;
 	frame[3] = BCC1;
 	memcpy(&frame[4], buffer, length + patterns);
-	frame[5 + length + patterns] = BCC2;
-	frame[6 + length + patterns] = FLAG;
+	frame[4 + length + patterns] = BCC2;
+	frame[5 + length + patterns] = FLAG;
 
 	return frame;
 }

@@ -80,9 +80,8 @@ int sendData(){
 
   char* dataField = malloc(BytesPerPacket);
   while ((bytesRead = fread(dataField, 1, BytesPerPacket, file)) > 0){
-    printf("%s\n", dataField);
     check = sendInformation(dataField, bytesRead);
-    if(check != 0){
+    if(check == -1){
       return -1;
     }
     frameCounter++;
@@ -132,12 +131,6 @@ int sendControl(int type){
     index++;
   }
 
-  i = 0;
-  for(; i < packageLength; i++){
-    printf("%c\n", controlPackage[i]);
-  }
-  printf("Control package length: %d\n", packageLength);
-
   if(llwrite(controlPackage, packageLength, app->fileDescriptor) == -1){
     free(controlPackage);
     return -1;
@@ -150,14 +143,18 @@ int sendInformation(char * buffer, int length){
   char *dataPackage = malloc(length + 4);
   dataPackage[0] = CONTROL_DATA;
   dataPackage[1] = frameCounter + '0';
-  dataPackage[2] = length / 256;
-  dataPackage[3] = length % 256;
+  dataPackage[2] = length / 256 + '0';
+  dataPackage[3] = length % 256 + '0';
 
   int i = 0;
   for(; i < length; i++){
     dataPackage[i+4] = buffer[i];
   }
-  if(llwrite(dataPackage, length, app->fileDescriptor) == -1){
+  i = 0;
+  for(; i < length + 4; i++){
+    printf("%c\n", dataPackage[i]);
+  }
+  if(llwrite(dataPackage, length + 4, app->fileDescriptor) == -1){
     free(dataPackage);
     return -1;
   }
