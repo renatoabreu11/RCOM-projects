@@ -145,7 +145,7 @@ int llread(int fd, unsigned char *package){
 
 	buffer = malloc(MAX_FRAME_LENGTH);
 
-	//while(1) {
+	while(1) {
 		length = readDataFrame(fd, buffer);
 		printf("Frame length with stuffing: %d\n", length);
 
@@ -165,8 +165,8 @@ int llread(int fd, unsigned char *package){
 
 		updateNs();
 		free(buffer);
-		//break;
-	//}
+		break;
+	}
 
 	return length - 6;
 }
@@ -445,8 +445,6 @@ int byteDestuffing(unsigned char** frame, int length){
 
 	int newLength = length - patterns;
 
-	printf("DEBUG 1\n");
-
 	int i = 1;
 	for(; i < length - 1; i++){
 		if((*frame)[i] == ESCAPE){
@@ -456,12 +454,8 @@ int byteDestuffing(unsigned char** frame, int length){
 		}
 	}
 
-	printf("DEBUG 2\n");
 	printf("Length antiga = %d, newLength = %d, patterns = %d\n", length, newLength, patterns);
-
 	*frame = realloc(*frame, newLength);
-
-	printf("DEBUG 3\n");
 
 	return newLength;
 }
