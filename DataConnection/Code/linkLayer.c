@@ -5,7 +5,6 @@
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
-int numREJtransmissions = 0;
 
 typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} state;
 
@@ -20,6 +19,7 @@ int initLinkLayer(int port, int baudrate, int packageSize, int retries, int time
 	linkLayer->numTransmissions = retries;
 	linkLayer->frameLength = packageSize;
 	linkLayer->ns = 0;
+	linkLayer->numREJtransmissions = 0;
 
 	return 1;
 }
@@ -110,12 +110,12 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 	//Check if Control is wrong
 	if(linkLayer->ns == 0) {
 		if(buffer[2] != C_I0) {
-			numREJtransmissions++;
+			linkLayer->numREJtransmissions++;
 			sendSupervision(fd, C_REJ_1);
 		}
 	} else {
 		if(buffer[2] != C_I1) {
-			numREJtransmissions++;
+			linkLayer->numREJtransmissions++;
 			sendSupervision(fd, C_REJ_0);
 		}
 
@@ -124,7 +124,7 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 
 	//Checks if BCC1 is wrong
 	if(buffer[3] != (buffer[1] ^ buffer[2])) {
-		numREJtransmissions++;
+		linkLayer->numREJtransmissions++;
 		if(linkLayer->ns == 0)
 			sendSupervision(fd, C_REJ_1);
 		else
@@ -139,7 +139,8 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 
 	if(bcc2Read != bcc2FromBytes){
 		printf("Different BCC's\n");
-		numREJtransmissions++;
+		printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
+		linkLayer->numREJtransmissions++;
 		if(linkLayer->ns == 0)
 			sendSupervision(fd, C_REJ_1);
 		else
@@ -158,7 +159,9 @@ int llread(int fd, unsigned char *package){
 
 	length = byteDestuffing(&buffer, length);
 	printf("Frame length after destuff: %d\n",length);
+
 	int dataSize = length - 6;
+	printf("Data size = %d\n", dataSize);
 
 	memcpy(package, &buffer[4], dataSize);
 
@@ -292,9 +295,10 @@ unsigned char * createDataFrame(unsigned char *buffer, int length) {
 
 	char C;
 	if(linkLayer->ns == 0)
-	C = C_I0;
+		C = C_I0;
 	else
-	C = C_I1;
+		C = C_I1;
+
 	char BCC1 = A ^ C;
 	char BCC2 = calculateBCC2(buffer, length);
 
@@ -506,10 +510,11 @@ int waitForResponse(int fd, int flagType) {
 				switch(flagType){
 					case 0: printf("UA flag received!\n"); break;
 					case 1:
-						if(receivedREJ == 0)
+						if(receivedREJ == 0) {
 							printf("RR flag received!\n"); break;
-						else
+						} else {
 							printf("An error ocurred. REJ flag received!\n"); break;
+						}
 					case 2: printf("DISC flag received!\n"); break;
 				}
 				if(flagType == 1){
@@ -582,6 +587,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 	unsigned char byteRead;
 	state current = start;
 	STOP = FALSE;
+	int aux = 0;
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
@@ -633,6 +639,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 				current = stop;
 			}else{
 				frame[counter++] = byteRead;
+				aux++;
 				break;
 			}
 			case stop:{
@@ -643,6 +650,8 @@ int readDataFrame(int fd, unsigned char *frame) {
 			default: break;
 		}
 	}
+
+	printf("Foram guardados %d bytes!\n", aux);
 	return counter;
 }
 

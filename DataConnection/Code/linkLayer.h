@@ -42,6 +42,7 @@ typedef struct LinkLayer {
 	int frameLength;
 	int status;
 	int ns;
+	int numREJtransmissions;
 	struct termios oldtio, newtio;
 }LinkLayer;
 
