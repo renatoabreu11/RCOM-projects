@@ -127,9 +127,11 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 	unsigned char bcc2Read = buffer[length - 2];
 	unsigned char bcc2FromBytes = calculateBCC2(package, dataSize);
 
+	printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
+
 	if(bcc2Read != bcc2FromBytes){
 		printf("Different BCC's\n");
-		printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
+		//printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
 		linkLayer->numREJtransmissions++;
 		sendSupervision(fd, linkLayer->controlREJ);
 		return -1;
@@ -139,28 +141,40 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 }
 
 int llread(int fd, unsigned char *package){
-	unsigned char * buffer = malloc(150);
-	int length = readDataFrame(fd, buffer);
-	printf("Frame length with stuffing: %d\n", length);
+	int nTry = 1;
+	unsigned char * buffer;
+	int length, dataSize;
 
-	length = byteDestuffing(&buffer, length);
-	printf("Frame length after destuff: %d\n",length);
+	while(nTry <= linkLayer->numTransmissions) {
+		buffer = malloc(150);
+		
+		length = readDataFrame(fd, buffer);
+		printf("Frame length with stuffing: %d\n", length);
 
-	int dataSize = length - 6;
-	printf("Data size = %d\n", dataSize);
+		length = byteDestuffing(&buffer, length);
+		printf("Frame length after destuff: %d\n",length);
 
-	memcpy(package, &buffer[4], dataSize);
+		dataSize = length - 6;
+		printf("Data size = %d\n", dataSize);
 
-	if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1)
-		return -1;
+		memcpy(package, &buffer[4], dataSize);
 
-	//Sends RR
-	sendSupervision(fd, linkLayer->controlRR);
+		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
+			nTry++;
+			free(buffer);
+			continue;
+		}
 
-	updateNs();
-	free(buffer);
+		//Sends RR
+		sendSupervision(fd, linkLayer->controlRR);
 
-	return length - 6;
+		updateNs();
+		free(buffer);
+
+		return length - 6;
+	}
+
+	return -1;
 }
 
 int llclose(int fd){
@@ -266,8 +280,10 @@ unsigned char calculateBCC2(unsigned char *frame, int length) {
 	int i = 0;
 	unsigned char BCC2;
 
-	for(; i < length; i++)
-	BCC2 ^= frame[i];
+	for(; i < length; i++) {
+		BCC2 ^= frame[i];
+		printf("Calculo do BCC2 = %c: usando = %c\n",BCC2, frame[i]);
+	}
 
 	return BCC2;
 }
