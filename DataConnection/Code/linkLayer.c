@@ -52,9 +52,13 @@ int llopen(int status, int port){
 	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-	//Valor que da = 2
-	linkLayer->newtio.c_cc[VTIME]    = 3;   /* inter-character timer unused */
-	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
+	if(linkLayer->status == 0) {
+		linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+		linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
+	} else {
+		linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+		linkLayer->newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
+	}
 
 	/*
 	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -161,6 +165,7 @@ int llread(int fd, unsigned char *package){
 
 		updateNs();
 		free(buffer);
+		//break;
 	//}
 
 	return length - 6;
@@ -172,6 +177,8 @@ int llclose(int fd){
 		exit(-1);
 	}
 	close(fd);
+
+	printf("Foram enviadas %d REJ!\n\n\n", linkLayer->numREJtransmissions);
 	return 1;
 }
 
@@ -383,6 +390,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 						printf("RR flag received!\n"); break;
 					}
 					else{
+						linkLayer->numREJtransmissions++;
 						printf("An error ocurred. REJ flag received!\n"); break;
 					}
 					case DISC: printf("DISC flag received!\n"); break;
@@ -435,6 +443,8 @@ int byteDestuffing(unsigned char** frame, int length){
 
 	int newLength = length - patterns;
 
+	printf("DEBUG 1\n");
+
 	int i = 1;
 	for(; i < length - 1; i++){
 		if((*frame)[i] == ESCAPE){
@@ -443,7 +453,14 @@ int byteDestuffing(unsigned char** frame, int length){
 			(*frame)[i] ^= 0x20;
 		}
 	}
+
+	printf("DEBUG 2\n");
+	printf("Length antiga = %d, newLength = %d, patterns = %d\n", length, newLength, patterns);
+
 	*frame = realloc(*frame, newLength);
+
+	printf("DEBUG 3\n");
+
 	return newLength;
 }
 
@@ -462,9 +479,12 @@ int readDataFrame(int fd, unsigned char *frame) {
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
-		printf("Byte read: %c\n", byteRead);
+		printf("RES = %d, Byte read: %c\n", res, byteRead);
 		if(res == -1)
 			return -1;
+		//If the number of bytes read is 0, there's no need to put them in the buffer
+		if(res == 0)
+			continue;
 
 		switch(current){
 			case start:

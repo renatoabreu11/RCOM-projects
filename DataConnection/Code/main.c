@@ -17,7 +17,7 @@
 #define CREJ 0x81
 
 int baudRate = 57600;
-int packageLength;
+int packageLength = 255;
 int retries = 3;
 int timeOut = 1;
 
