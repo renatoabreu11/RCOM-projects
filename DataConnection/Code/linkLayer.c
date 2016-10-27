@@ -84,20 +84,16 @@ int llwrite(unsigned char * buffer, int length, int fd){
 	int sizeAfterStuff = byteStuffing(&frame, newSize);
 	printf("Frame length after stuffing: %d\n", sizeAfterStuff);
 
-	int bytesSent = write(fd, frame, sizeAfterStuff);
-	if(bytesSent != sizeAfterStuff){
-		printf("%s\n", "Error sending data packet");
-		return -1;
-	}
+	int bytesSent;
 	int nTry = 1;
 	int messageReceived = 0;
 	while(nTry <= linkLayer->numTransmissions && !messageReceived){
+		bytesSent = write(fd, frame, sizeAfterStuff);
+		if(bytesSent != sizeAfterStuff){
+			printf("%s\n", "Error sending data packet");
+			return -1;
+		}
 		if(waitForResponse(fd, RR) == -1){
-			bytesSent = write(fd, frame, sizeAfterStuff);
-			if(bytesSent != sizeAfterStuff){
-				printf("%s\n", "Error sending data packet");
-				return -1;
-			}
 			nTry++;
 		} else messageReceived = 1;
 	}
@@ -141,40 +137,33 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 }
 
 int llread(int fd, unsigned char *package){
-	int nTry = 1;
 	unsigned char * buffer;
 	int length, dataSize;
 
-	while(nTry <= linkLayer->numTransmissions) {
-		buffer = malloc(150);
+	buffer = malloc(150);
 
-		length = readDataFrame(fd, buffer);
-		printf("Frame length with stuffing: %d\n", length);
+	length = readDataFrame(fd, buffer);
+	printf("Frame length with stuffing: %d\n", length);
 
-		length = byteDestuffing(&buffer, length);
-		printf("Frame length after destuff: %d\n",length);
+	length = byteDestuffing(&buffer, length);
+	printf("Frame length after destuff: %d\n",length);
 
-		dataSize = length - 6;
-		printf("Data size = %d\n", dataSize);
+	dataSize = length - 6;
+	printf("Data size = %d\n", dataSize);
 
-		memcpy(package, &buffer[4], dataSize);
+	memcpy(package, &buffer[4], dataSize);
 
-		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
-			nTry++;
-			free(buffer);
-			continue;
-		}
-
-		//Sends RR
-		sendSupervision(fd, linkLayer->controlRR);
-
-		updateNs();
-		free(buffer);
-
-		return length - 6;
+	if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
+		return -1;
 	}
 
-	return -1;
+	//Sends RR
+	sendSupervision(fd, linkLayer->controlRR);
+
+	updateNs();
+	free(buffer);
+
+	return length - 6;
 }
 
 int llclose(int fd){
@@ -191,10 +180,10 @@ int estabilishConnection(int fd){
 	timer = 1;
 	if(linkLayer->status == 0){
 		printf("%s\n", "Connecting Transmitter");
-		sendSupervision(fd, C_SET);
 		int nTry = 1;
 		int messageReceived = 0;
 		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+			sendSupervision(fd, C_SET);
 			if(waitForResponse(fd, UA) == -1){
 				nTry++;
 			} else messageReceived = 1;
@@ -216,10 +205,10 @@ int endConnection(int fd){
 	timer = 1;
 	if(linkLayer->status == 0){
 		printf("%s\n", "Disconnecting Transmitter");
-		sendSupervision(fd, C_DISC);
 		int nTry = 1;
 		int messageReceived = 0;
 		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+			sendSupervision(fd, C_DISC);
 			if(waitForResponse(fd, DISC) == -1){
 				nTry++;
 			} else messageReceived = 1;
@@ -233,7 +222,7 @@ int endConnection(int fd){
 		printf("%s\n", "Disconnecting Receiver");
 		int nTry = 1;
 		int messageReceived = 0;
-		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+		while(!messageReceived){
 			if(waitForResponse(fd, DISC) == -1){
 				nTry++;
 			} else messageReceived = 1;
@@ -242,10 +231,10 @@ int endConnection(int fd){
 			printf("%s\n", "Error terminating connection!");
 			return -1;
 		}
-		sendSupervision(fd, C_DISC);
 		nTry = 1;
 		messageReceived = 0;
 		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+			sendSupervision(fd, C_DISC);
 			if(waitForResponse(fd, UA) == -1){
 				nTry++;
 			} else messageReceived = 1;
@@ -295,8 +284,8 @@ unsigned char * createDataFrame(unsigned char *buffer, int length) {
 	unsigned char *frame = malloc(newLength);
 
 	unsigned char C = linkLayer->controlI;
-	char BCC1 = A ^ C;
-	char BCC2 = calculateBCC2(buffer, length);
+	unsigned char BCC1 = A ^ C;
+	unsigned char BCC2 = calculateBCC2(buffer, length);
 
 	frame[0] = FLAG;
 	frame[1] = A;
@@ -316,13 +305,15 @@ int waitForResponse(int fd, unsigned char flagType) {
 		case UA: printf("Waiting for UA flag...\n"); control = C_UA; break;
 		case RR: printf("Waiting for RR flag...\n"); control = linkLayer->controlRR; break;
 		case DISC: printf("Waiting for DISC flag...\n"); control = C_DISC; break;
-		case SET: printf("Waiting for SET flag...\n"); control = C_SET; timer = 4; break;
+		case SET: printf("Waiting for SET flag...\n"); control = C_SET; timer = linkLayer->timeout+1; break;
 	}
 	unsigned char buf[255];
 
 	int res;
 	int receivedREJ = 0;
-	STOP = FALSE;
+	if(flagType == SET)
+		STOP = FALSE;
+	else STOP = TRUE;
 
 	state current = start;
 

@@ -19,7 +19,7 @@
 int baudRate = 57600;
 int packageLength = 150;
 int retries = 3;
-int timeOut = 3;
+int timeOut = 1;
 
 void clear_stream(FILE *in){
 	int ch;
