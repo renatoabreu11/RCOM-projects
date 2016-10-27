@@ -397,6 +397,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 					else{
 						linkLayer->numREJtransmissions++;
 						printf("An error ocurred. REJ flag received!\n"); break;
+						return -1;
 					}
 					case DISC: printf("DISC flag received!\n"); break;
 					case SET: printf("SET flag received!\n"); break;
