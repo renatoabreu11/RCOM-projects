@@ -112,6 +112,17 @@ int llread(int fd, unsigned char *package){
 
 	length = byteDestuffing(&buffer, length);
 	printf("Frame length after destuff: %d\n",length);
+	int dataSize = length - 6;
+
+	memcpy(package, &buffer[4], dataSize);
+
+	unsigned char bcc2Read = buffer[length - 2];
+	unsigned char bcc2FromBytes = calculateBCC2(package, dataSize);
+
+	if(bcc2Read != bcc2FromBytes){
+		printf("Different BCC's\n");
+		//enviar novamente a trama
+	}
 
 	/*
 	Estas verificaçoes são depois do destuffing
@@ -155,8 +166,6 @@ int llread(int fd, unsigned char *package){
 		sendSupervision(fd, C_RR0);
 
 	updateNs();
-
-	memcpy(package, &buffer[4], length - 6);
 	free(buffer);
 
 	return length - 6;
@@ -261,9 +270,9 @@ int sendSupervision(int fd, unsigned char control){
 	return 0;
 }
 
-char calculateBCC2(unsigned char *frame, int length) {
+unsigned char calculateBCC2(unsigned char *frame, int length) {
 	int i = 0;
-	char BCC2;
+	unsigned char BCC2;
 
 	for(; i < length; i++)
 	BCC2 ^= frame[i];
@@ -500,8 +509,8 @@ int waitForResponse(int fd, int flagType) {
 
 int countPatterns(unsigned char** frame, int length){
 	int patterns = 0;
-	int i = 0;
-	for(; i < length; i++){
+	int i = 1;
+	for(; i < length - 1; i++){
 		if((*frame)[i] == ESCAPE || (*frame)[i] == FLAG)
 		patterns++;
 	}
@@ -509,7 +518,7 @@ int countPatterns(unsigned char** frame, int length){
 }
 
 int byteStuffing(unsigned char** frame, int length) {
-	int patterns = countPatterns(frame, length) - 2;
+	int patterns = countPatterns(frame, length);
 	int newLength = length + patterns;
 	*frame = realloc(*frame, newLength);
 
@@ -526,7 +535,7 @@ int byteStuffing(unsigned char** frame, int length) {
 }
 
 int byteDestuffing(unsigned char** frame, int length){
-	int patterns = countPatterns(frame, length) - 2;
+	int patterns = countPatterns(frame, length);
 
 	if(patterns == 0)
 		return length;

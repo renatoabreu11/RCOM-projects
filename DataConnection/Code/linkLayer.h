@@ -166,7 +166,7 @@ void atende();
  * @param
  * @return
  */
-char calculateBCC2(unsigned char *frame, int length);
+unsigned char calculateBCC2(unsigned char *frame, int length);
 
 /**
  * @param

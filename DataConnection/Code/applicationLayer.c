@@ -86,6 +86,9 @@ int sendData(){
       return -1;
     }
     frameCounter++;
+    if(frameCounter == 256){
+      frameCounter = 1;
+    }
     memset(dataField, 0, DataLength);
   }
   fclose(file);
@@ -187,6 +190,9 @@ int receiveData(){
     }
 
     frameCounter++;
+    if(frameCounter == 256){
+      frameCounter = 1;
+    }
 
     fwrite(buffer, 1, length, file);
 
@@ -258,8 +264,6 @@ int receiveInformation(unsigned char *buffer, int *length){
   if((packageSize = llread(app->fileDescriptor, package)) == -1)
     return -1;
 
-  printf("N = %c\n", package[0]);
-
   int C = package[0];
   if(C != CONTROL_DATA){
     printf("%s\n", "wrong C flag ");
@@ -267,6 +271,7 @@ int receiveInformation(unsigned char *buffer, int *length){
   }
 
   int N = package[1];
+  printf("N = %d\n", N);
   if(N != frameCounter){
     printf("%s\n", "neh");
     return -1;
@@ -285,10 +290,6 @@ int receiveInformation(unsigned char *buffer, int *length){
   printf("Tamanho do package = %d\n", packageSize);
 
   free(package);
-
-  /*int i;
-  for(i = 0; i < length; i++)
-  printf("Byte lido da imagem = %c\n", buffer[i]);*/
 
   return 1;
 }
