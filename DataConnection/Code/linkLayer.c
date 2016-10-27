@@ -147,7 +147,7 @@ int llread(int fd, unsigned char *package){
 
 	while(nTry <= linkLayer->numTransmissions) {
 		buffer = malloc(150);
-		
+
 		length = readDataFrame(fd, buffer);
 		printf("Frame length with stuffing: %d\n", length);
 
@@ -277,8 +277,10 @@ int sendSupervision(int fd, unsigned char control){
 }
 
 unsigned char calculateBCC2(unsigned char *frame, int length) {
-	int i = 0;
+	int i = 1;
 	unsigned char BCC2;
+
+	BCC2 = frame[0];
 
 	for(; i < length; i++) {
 		BCC2 ^= frame[i];
@@ -292,7 +294,7 @@ unsigned char * createDataFrame(unsigned char *buffer, int length) {
 	int newLength = length + 6;
 	unsigned char *frame = malloc(newLength);
 
-	char C = linkLayer->controlI;
+	unsigned char C = linkLayer->controlI;
 	char BCC1 = A ^ C;
 	char BCC2 = calculateBCC2(buffer, length);
 
