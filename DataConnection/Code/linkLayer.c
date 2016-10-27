@@ -143,9 +143,9 @@ int llread(int fd, unsigned char *package){
 	unsigned char * buffer;
 	int length, dataSize;
 
-	buffer = malloc(MAX_FRAME_LENGTH);
-
 	while(1) {
+		buffer = malloc(MAX_FRAME_LENGTH);
+		
 		length = readDataFrame(fd, buffer);
 		printf("Frame length with stuffing: %d\n", length);
 
@@ -157,8 +157,10 @@ int llread(int fd, unsigned char *package){
 
 		memcpy(package, &buffer[4], dataSize);
 
-		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1)
-			return -1;//continue;
+		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
+			free(buffer);
+			continue;
+		}
 
 		//Sends RR
 		sendSupervision(fd, linkLayer->controlRR);

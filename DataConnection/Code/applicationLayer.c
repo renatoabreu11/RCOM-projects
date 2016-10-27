@@ -213,15 +213,14 @@ int receiveData(){
     }
   }
 
+  printf("Vamos receber o DISC!!!\n\n\n");
+
   if(receiveControl(CONTROL_END) == -1){
     printf("%s\n", "Error receiving END control packet");
     return -1;
   }
 
   fclose(file);
-
-
-
   return 1;
 }
 
