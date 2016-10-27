@@ -184,22 +184,21 @@ int receiveData(){
     int length = 0;
 
     if (receiveInformation(buffer, &length) == -1) {
-      printf("Error receiv data packet.\n");
-      free(buffer);
-      return 0;
+      printf("Error receiving data packet.\n");
+      continue;
+    } else {
+      frameCounter++;
+      if(frameCounter == 256){
+        frameCounter = 1;
+      }
+
+      fwrite(buffer, 1, length, file);
+
+      memset(buffer, 0, DataLength);
+
+      bytesRead += length;
+      printf("Bytes read: %d\n", bytesRead);
     }
-
-    frameCounter++;
-    if(frameCounter == 256){
-      frameCounter = 1;
-    }
-
-    fwrite(buffer, 1, length, file);
-
-    memset(buffer, 0, DataLength);
-
-    bytesRead += length;
-    printf("Bytes read: %d\n", bytesRead);
   }
 
   if(receiveControl(CONTROL_END) == -1){

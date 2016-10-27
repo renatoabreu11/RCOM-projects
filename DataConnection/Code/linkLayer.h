@@ -26,6 +26,8 @@
 #define C_RR0 0x05
 #define C_RR1 0x85
 #define C_DISC 0x0b
+#define C_REJ_0 0x81
+#define C_REJ_1 0x01
 
 #define ESCAPE 0x7d
 #define FLAG 0x7e
@@ -197,6 +199,11 @@ int readDataInformation(char *frame, char byteRead);
  * @return
  */
 int readDataFrame(int fd, unsigned char *frame);
+
+/**
+ *
+ */
+int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, int length, int dataSize);
 
 /**
  *

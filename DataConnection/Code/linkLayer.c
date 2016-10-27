@@ -5,6 +5,7 @@
 
 volatile int STOP=FALSE;
 int timer = 1, flag = 1;
+int numREJtransmissions = 0;
 
 typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} state;
 
@@ -105,6 +106,51 @@ int llwrite(unsigned char * buffer, int length, int fd){
 	return 1;
 }
 
+int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, int length, int dataSize) {
+	//Check if Control is wrong
+	if(linkLayer->ns == 0) {
+		if(buffer[2] != C_I0) {
+			numREJtransmissions++;
+			sendSupervision(fd, C_REJ_1);
+		}
+	} else {
+		if(buffer[2] != C_I1) {
+			numREJtransmissions++;
+			sendSupervision(fd, C_REJ_0);
+		}
+
+		return -1;
+	}
+
+	//Checks if BCC1 is wrong
+	if(buffer[3] != (buffer[1] ^ buffer[2])) {
+		numREJtransmissions++;
+		if(linkLayer->ns == 0)
+			sendSupervision(fd, C_REJ_1);
+		else
+			sendSupervision(fd, C_REJ_0);
+
+		return -1;
+	}
+
+	//Checks if BCC2 is wrong
+	unsigned char bcc2Read = buffer[length - 2];
+	unsigned char bcc2FromBytes = calculateBCC2(package, dataSize);
+
+	if(bcc2Read != bcc2FromBytes){
+		printf("Different BCC's\n");
+		numREJtransmissions++;
+		if(linkLayer->ns == 0)
+			sendSupervision(fd, C_REJ_1);
+		else
+			sendSupervision(fd, C_REJ_0);
+
+		return -1;
+	}
+
+	return 0;
+}
+
 int llread(int fd, unsigned char *package){
 	unsigned char * buffer = malloc(150);
 	int length = readDataFrame(fd, buffer);
@@ -116,48 +162,8 @@ int llread(int fd, unsigned char *package){
 
 	memcpy(package, &buffer[4], dataSize);
 
-	unsigned char bcc2Read = buffer[length - 2];
-	unsigned char bcc2FromBytes = calculateBCC2(package, dataSize);
-
-	if(bcc2Read != bcc2FromBytes){
-		printf("Different BCC's\n");
-		//enviar novamente a trama
-	}
-
-	/*
-	Estas verificaçoes são depois do destuffing
-
-	 if(linkLayer->ns == 0) {
-				if(byteRead == C_I0)
-					current = cRCVI;
-				else if(byteRead != FLAG)
-					current = startI;
-				else
-					current = flagRCVI;
-			} else if(linkLayer->ns == 1) {
-				if(byteRead == C_I1)
-					current = cRCVI;
-				else if(byteRead != FLAG)
-					current = startI;
-				else
-					current = flagRCVI;
-			}
-			if(linkLayer->ns == 0) {
-				if(byteRead == (A^C_I0))
-					current = BCC1I;
-				else if(byteRead != FLAG)
-					current = startI;
-				else
-					current = flagRCVI;
-			} else if(linkLayer->ns == 1) {
-				if(byteRead == (A^C_I1))
-					current = BCC1I;
-				else if(byteRead != FLAG)
-					current = startI;
-				else
-					current = flagRCVI;
-			}
-*/
+	if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1)
+		return -1;
 
 	//Sends RR
 	if(linkLayer->ns == 0)
@@ -367,6 +373,7 @@ int waitForResponse(int fd, int flagType) {
 	unsigned char buf[255];
 	int res;
 	timer = 1;
+	int receivedREJ = 0;
 
 	state current = start;
 
@@ -453,14 +460,20 @@ int waitForResponse(int fd, int flagType) {
 						if(linkLayer->ns == 1) {
 							if(buf[0] == (A^C_RR0))
 							current = BCC;
-							else if(buf[0] != FLAG)
+							else if(buf[0] == (A^C_REJ_0)) {
+								current = BCC;
+								receivedREJ = 1;
+							} else if(buf[0] != FLAG)
 							current = start;
 							else
 							current = flagRCV;
 						} else if (linkLayer->ns == 0) {
 							if(buf[0] == (A^C_RR1))
 							current = BCC;
-							else if(buf[0] != FLAG)
+							else if(buf[0] == (A^C_REJ_1)) {
+								current = BCC;
+								receivedREJ = 1;
+							} else if(buf[0] != FLAG)
 							current = start;
 							else
 							current = flagRCV;
@@ -492,7 +505,11 @@ int waitForResponse(int fd, int flagType) {
 				flag = 1;
 				switch(flagType){
 					case 0: printf("UA flag received!\n"); break;
-					case 1: printf("RR flag received!\n"); break;
+					case 1:
+						if(receivedREJ == 0)
+							printf("RR flag received!\n"); break;
+						else
+							printf("An error ocurred. REJ flag received!\n"); break;
 					case 2: printf("DISC flag received!\n"); break;
 				}
 				if(flagType == 1){
@@ -622,10 +639,10 @@ int readDataFrame(int fd, unsigned char *frame) {
 				STOP = TRUE;
 				break;
 			}
-			
+
 			default: break;
 		}
-	} 
+	}
 	return counter;
 }
 
