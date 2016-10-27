@@ -17,20 +17,23 @@
 #define TRUE 1
 
 //Frame info
+#define ESCAPE 0x7d
 #define FLAG 0x7e
 #define A 0x03
 #define C_SET 0x03
 #define C_UA 0x07
-#define C_I0 0x00
-#define C_I1 0x40
-#define C_RR0 0x05
-#define C_RR1 0x85
+#define C_I 0x00
+#define C_RR 0x85
 #define C_DISC 0x0b
-#define C_REJ_0 0x81
-#define C_REJ_1 0x01
+#define C_REJ 0x81
 
-#define ESCAPE 0x7d
-#define FLAG 0x7e
+#define UA 0
+#define RR 1
+#define DISC 2
+#define SET 3
+
+#define BIT_MASK(bit)             (1 << (bit))
+#define TOOGLE_BIT(value,bit)        ((value) ^= BIT_MASK(bit))
 
 typedef struct LinkLayer {
 	char port[20];
@@ -43,6 +46,9 @@ typedef struct LinkLayer {
 	int status;
 	int ns;
 	int numREJtransmissions;
+	unsigned int controlI;
+	unsigned int controlRR;
+	unsigned int controlREJ;
 	struct termios oldtio, newtio;
 }LinkLayer;
 
@@ -119,19 +125,12 @@ int sendSupervision(int fd, unsigned char control);
 int writeRR(int fd);
 
 /**
- * Reads from serial port until it finds the SET flag
- * @param serial port descriptor
- * @return 0 if sucessful, -1 otherwise
- */
-int waitForSET(int fd);
-
-/**
  * @param serial port descriptor
  * @param type of flag sent by the emitter or the receiver
  * @param link layer object
  * @return 0 if the flag has been read under the number of transmissions defined, -1 otherwise
  */
-int waitForResponse(int fd, int flagType);
+int waitForResponse(int fd, unsigned char flagType);
 
 /**
  * @param

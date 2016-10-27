@@ -12,6 +12,10 @@
 
 #include "applicationLayer.h"
 
+#define CI 0x00
+#define CRR 0x85
+#define CREJ 0x81
+
 int baudRate = 57600;
 int packageLength = 150;
 int retries = 3;
