@@ -353,7 +353,10 @@ int waitForResponse(int fd, unsigned char flagType) {
 			}
 
 			case aRCV:{
-				if(buf[0] == control)
+				if(buf[0] == linkLayer->controlREJ){
+					current = cRCV;
+				}
+				else if(buf[0] == control)
 					current = cRCV;
 				else if(buf[0] != FLAG)
 					current = start;
@@ -363,12 +366,12 @@ int waitForResponse(int fd, unsigned char flagType) {
 			}
 
 			case cRCV:{
-				if(buf[0] == (A^control))
-					current = BCC;
-				else if(buf[0] == (A^linkLayer->controlREJ)){
+				if(buf[0] == (A^linkLayer->controlREJ)){
 					current = BCC;
 					receivedREJ = 1;
 				}
+				else if(buf[0] == (A^control))
+					current = BCC;
 				else if(buf[0] == FLAG)
 					current = start;
 				else
@@ -398,10 +401,11 @@ int waitForResponse(int fd, unsigned char flagType) {
 					case DISC: printf("DISC flag received!\n"); break;
 					case SET: printf("SET flag received!\n"); break;
 				}
-				if(flagType == 1){
-					printf("%s\n", "NS Received and updated");
-					updateNs();
-				}
+				if(!receivedREJ)
+					if(flagType == 1){
+						printf("%s\n", "NS Received and updated");
+						updateNs();
+					}
 				return 1;
 			}
 			default: break;
