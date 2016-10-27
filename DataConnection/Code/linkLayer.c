@@ -178,7 +178,8 @@ int llclose(int fd){
 	}
 	close(fd);
 
-	printf("Foram enviadas %d REJ!\n\n\n", linkLayer->numREJtransmissions);
+	printf("Rej transmissions %d\n", linkLayer->numREJtransmissions);
+
 	return 1;
 }
 

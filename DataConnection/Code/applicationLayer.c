@@ -100,6 +100,19 @@ int sendData(){
     llclose(app->fileDescriptor);
     return -1;
   }
+
+  struct stat fileStat;
+  unsigned int realSize;
+  if (stat(app->fileName, &fileStat) == 0)
+    realSize = fileStat.st_size;
+  else{
+    printf("%s\n", "Error getting file size");
+    return -1;
+  }
+
+  printf("File %s real size %d\n", app->fileName, realSize);
+  printf("File %s size read from package control %d\n", app->fileName, app->fileSize);
+
   return 1;
 }
 
@@ -206,6 +219,8 @@ int receiveData(){
   }
 
   fclose(file);
+
+
 
   return 1;
 }
