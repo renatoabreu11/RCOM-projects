@@ -10,14 +10,13 @@ typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} state;
 
 LinkLayer *linkLayer;
 
-int initLinkLayer(int port, int baudrate, int packageSize, int retries, int timeout) {
+int initLinkLayer(int port, int baudrate, int retries, int timeout) {
 	linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	sprintf(linkLayer->port ,"/dev/ttyS%d", port);
 	linkLayer->baudRate = getBaud(baudrate);
 	linkLayer->sequenceNumber = 0;
 	linkLayer->timeout = timeout;
 	linkLayer->numTransmissions = retries;
-	linkLayer->frameLength = packageSize;
 	linkLayer->ns = 0;
 	linkLayer->numREJtransmissions = 0;
 	linkLayer->controlI = C_I;
@@ -140,28 +139,29 @@ int llread(int fd, unsigned char *package){
 	unsigned char * buffer;
 	int length, dataSize;
 
-	buffer = malloc(150);
+	buffer = malloc(MAX_FRAME_LENGTH);
 
-	length = readDataFrame(fd, buffer);
-	printf("Frame length with stuffing: %d\n", length);
+	//while(1) {
+		length = readDataFrame(fd, buffer);
+		printf("Frame length with stuffing: %d\n", length);
 
-	length = byteDestuffing(&buffer, length);
-	printf("Frame length after destuff: %d\n",length);
+		length = byteDestuffing(&buffer, length);
+		printf("Frame length after destuff: %d\n",length);
 
-	dataSize = length - 6;
-	printf("Data size = %d\n", dataSize);
+		dataSize = length - 6;
+		printf("Data size = %d\n", dataSize);
 
-	memcpy(package, &buffer[4], dataSize);
+		memcpy(package, &buffer[4], dataSize);
 
-	if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
-		return -1;
-	}
+		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1)
+			return -1;//continue;
 
-	//Sends RR
-	sendSupervision(fd, linkLayer->controlRR);
+		//Sends RR
+		sendSupervision(fd, linkLayer->controlRR);
 
-	updateNs();
-	free(buffer);
+		updateNs();
+		free(buffer);
+	//}
 
 	return length - 6;
 }
@@ -356,12 +356,12 @@ int waitForResponse(int fd, unsigned char flagType) {
 			case cRCV:{
 				if(buf[0] == (A^control))
 					current = BCC;
-				else if(buf[0] != FLAG)
-					current = start;
-				else if(buf[0] != (A^linkLayer->controlREJ)){
+				else if(buf[0] == (A^linkLayer->controlREJ)){
 					current = BCC;
 					receivedREJ = 1;
 				}
+				else if(buf[0] == FLAG)
+					current = start;
 				else
 					current = flagRCV;
 				break;

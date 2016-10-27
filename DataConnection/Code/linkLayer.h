@@ -9,10 +9,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#define MAX_TRIES 3
-#define MAX_SIZE 10
-
-#define _POSIX_SOURCE 1 /* POSIX compliant source */
+#define MAX_FRAME_LENGTH 1024
 #define FALSE 0
 #define TRUE 1
 
@@ -41,7 +38,6 @@ typedef struct LinkLayer {
 	unsigned int sequenceNumber;
 	unsigned int timeout;
 	unsigned int numTransmissions;
-	char frame[MAX_SIZE];
 	int frameLength;
 	int status;
 	int ns;
@@ -62,7 +58,7 @@ typedef struct LinkLayer {
  * @param  timeout     [description]
  * @return             [description]
  */
-int initLinkLayer(int port, int baudRate, int packageSize, int retries, int timeout);
+int initLinkLayer(int port, int baudRate, int retries, int timeout);
 
 /**
  * [llopen description]

@@ -8,7 +8,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
   if (app == NULL)
   return -1;
 
-  initLinkLayer(port, baudRate, packageSize, retries, timeout);
+  initLinkLayer(port, baudRate, retries, timeout);
   int ret = llopen(status, port);
   if(ret == -1){
     return -1;
@@ -16,6 +16,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     app->fileDescriptor = ret;
   }
   app->status = status;
+  app->dataLength = packageSize;
 
   if(app->status == 0){
     app->fileName = name;
@@ -78,9 +79,8 @@ int sendData(){
     return -1;
   }
 
-
-  unsigned char* dataField = malloc(DataLength);
-  while ((bytesRead = fread(dataField, 1, DataLength, file)) > 0){
+  unsigned char* dataField = malloc(app->dataLength);
+  while ((bytesRead = fread(dataField, 1, app->dataLength, file)) > 0){
     check = sendInformation(dataField, bytesRead);
     if(check == -1){
       return -1;
@@ -89,7 +89,7 @@ int sendData(){
     if(frameCounter == 256){
       frameCounter = 1;
     }
-    memset(dataField, 0, DataLength);
+    memset(dataField, 0, app->dataLength);
   }
   fclose(file);
   free(dataField);
@@ -170,14 +170,13 @@ int receiveData(){
     return -1;
   }
 
-  FILE *file = fopen("pinguim.gif", "wb");
-  //FILE *file = fopen(app->fileName, "wb");
+  FILE *file = fopen(app->fileName, "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
   }
 
-  unsigned char* buffer = malloc(DataLength);
+  unsigned char* buffer = malloc(app->dataLength);
   int bytesRead = 0;
 
   while (bytesRead < app->fileSize) {
@@ -194,7 +193,7 @@ int receiveData(){
 
       fwrite(buffer, 1, length, file);
 
-      memset(buffer, 0, DataLength);
+      memset(buffer, 0, app->dataLength);
 
       bytesRead += length;
       printf("Bytes read: %d\n", bytesRead);
@@ -212,7 +211,7 @@ int receiveData(){
 }
 
 int receiveControl(int control){
-  unsigned char *package = malloc(DataLength);
+  unsigned char *package = malloc(app->dataLength);
   int packageSize;
   if((packageSize = llread(app->fileDescriptor, package)) == -1)
     return -1;
@@ -258,7 +257,7 @@ int receiveControl(int control){
 }
 
 int receiveInformation(unsigned char *buffer, int *length){
-  unsigned char *package = malloc(DataLength);
+  unsigned char *package = malloc(app->dataLength);
   int packageSize;
   if((packageSize = llread(app->fileDescriptor, package)) == -1)
     return -1;

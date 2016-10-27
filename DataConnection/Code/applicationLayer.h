@@ -15,7 +15,6 @@
 #define CONTROL_END 0x03
 #define FILE_SIZE 0x00
 #define FILE_NAME 0x01
-#define DataLength 100
 #define DataHeaders 4
 #define L2 0x00
 #define RECEIVER 1
@@ -30,6 +29,7 @@ typedef struct ApplicationLayer{
 	char * fileName;
 	unsigned int fileSize;
 	int nameLength;
+	int dataLength;
 }ApplicationLayer;
 
 /**
