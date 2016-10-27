@@ -226,6 +226,7 @@ int endConnection(int fd){
 			return -1;
 		}
 		sendSupervision(fd, C_UA);
+		sleep(1);
 	} else if(linkLayer->status == 1){
 		printf("%s\n", "Disconnecting Receiver");
 		int nTry = 1;
