@@ -108,7 +108,10 @@ int llwrite(unsigned char * buffer, int length, int fd){
 }
 
 int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, int length, int dataSize) {
-	//Check if Control is wrong
+
+	printf("C = %02X\n\n", linkLayer->controlI);
+
+	//Check if Control is wrong (using Ns)
 	if(buffer[2] != linkLayer->controlI) {
 		linkLayer->numREJtransmissions++;
 		sendSupervision(fd, linkLayer->controlREJ);
@@ -126,10 +129,8 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 	unsigned char bcc2Read = buffer[length - 2];
 	unsigned char bcc2FromBytes = calculateBCC2(package, dataSize);
 
-	printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
-
 	if(bcc2Read != bcc2FromBytes){
-		printf("Different BCC's\n");
+		//printf("Different BCC's\n");
 		//printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
 		linkLayer->numREJtransmissions++;
 		sendSupervision(fd, linkLayer->controlREJ);
@@ -153,7 +154,7 @@ int llread(int fd, unsigned char *package){
 		printf("Frame length after destuff: %d\n",length);
 
 		dataSize = length - 6;
-		printf("Data size = %d\n", dataSize);
+		//printf("Data size = %d\n", dataSize);
 
 		memcpy(package, &buffer[4], dataSize);
 
@@ -282,10 +283,8 @@ unsigned char calculateBCC2(unsigned char *frame, int length) {
 
 	BCC2 = frame[0];
 
-	for(; i < length; i++) {
+	for(; i < length; i++)
 		BCC2 ^= frame[i];
-		printf("Calculo do BCC2 = %c: usando = %c\n",BCC2, frame[i]);
-	}
 
 	return BCC2;
 }
@@ -418,7 +417,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 			default: break;
 		}
 	}
-	
+
 	return -1;
 }
 
@@ -466,7 +465,7 @@ int byteDestuffing(unsigned char** frame, int length){
 		}
 	}
 
-	printf("Length antiga = %d, newLength = %d, patterns = %d\n", length, newLength, patterns);
+	//printf("Length antiga = %d, newLength = %d, patterns = %d\n", length, newLength, patterns);
 	*frame = realloc(*frame, newLength);
 
 	return newLength;
@@ -487,7 +486,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
-		printf("RES = %d, Byte read: %c\n", res, byteRead);
+
 		if(res == -1)
 			return -1;
 		//If the number of bytes read is 0, there's no need to put them in the buffer
@@ -550,7 +549,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 		}
 	}
 
-	printf("Foram guardados %d bytes!\n", aux);
+	//printf("Foram guardados %d bytes!\n", aux);
 	return counter;
 }
 

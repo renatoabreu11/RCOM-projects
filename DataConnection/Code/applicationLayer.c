@@ -209,7 +209,7 @@ int receiveData(){
       memset(buffer, 0, app->dataLength);
 
       bytesRead += length;
-      printf("Bytes read: %d\n", bytesRead);
+      //printf("Bytes read: %d\n", bytesRead);
     }
   }
 
@@ -283,7 +283,7 @@ int receiveInformation(unsigned char *buffer, int *length){
   }
 
   int N = package[1];
-  printf("N = %d\n", N);
+  //printf("N = %d\n", N);
   if(N != frameCounter){
     printf("%s\n", "neh");
     return -1;
@@ -292,14 +292,14 @@ int receiveInformation(unsigned char *buffer, int *length){
   int l2 = package[2];
   int l1 = package[3];
 
-  printf("l2 = %d\n", l2);
-  printf("l1 = %d\n", l1);
+  //printf("l2 = %d\n", l2);
+  //printf("l1 = %d\n", l1);
 
   *length = 256 * l2 + l1;
-  printf("Length = %d\n\n\n", *length);
+  //printf("Length = %d\n\n\n", *length);
   memcpy(buffer, &package[4], *length);
 
-  printf("Tamanho do package = %d\n", packageSize);
+  //printf("Tamanho do package = %d\n", packageSize);
 
   free(package);
 
