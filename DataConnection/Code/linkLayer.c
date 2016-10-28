@@ -57,7 +57,7 @@ int llopen(int status, int port){
 		linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
 	} else {
 		linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-		linkLayer->newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
+		linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
 	}
 
 	/*
@@ -148,6 +148,12 @@ int llread(int fd, unsigned char *package){
 		buffer = malloc(MAX_FRAME_LENGTH);
 
 		length = readDataFrame(fd, buffer);
+
+		if(length == -1) {
+			printf("Erro, lendo de novo\n");
+			continue;
+		}
+
 		printf("Frame length with stuffing: %d\n", length);
 
 		length = byteDestuffing(&buffer, length);
@@ -159,6 +165,7 @@ int llread(int fd, unsigned char *package){
 		memcpy(package, &buffer[4], dataSize);
 
 		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
+			return -1;
 			free(buffer);
 			continue;
 		}
@@ -256,6 +263,7 @@ int endConnection(int fd){
 			return -1;
 		}
 	}
+
 	return 1;
 }
 
@@ -389,7 +397,6 @@ int waitForResponse(int fd, unsigned char flagType) {
 					current = start;
 
 			case stop:
-				printf("Chego ao stop\n");
 				flag = 1;
 				switch(flagType){
 					case UA: printf("UA flag received!\n"); break;
@@ -531,6 +538,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 				counter = 0;
 			}
 			break;
+
 			case BCC:
 			if(byteRead == FLAG){
 				frame[counter++] = byteRead;
@@ -538,10 +546,19 @@ int readDataFrame(int fd, unsigned char *frame) {
 			}else{
 				frame[counter++] = byteRead;
 				aux++;
-				break;
 			}
+			break;
+
 			case stop:{
-				STOP = TRUE;
+				if(byteRead == A) {
+					current = aRCV;
+					frame[0] = FLAG;
+					frame[1] = A;
+					counter = 2;
+					aux = 0;
+				}
+				else
+					STOP = TRUE;
 				break;
 			}
 
@@ -549,7 +566,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 		}
 	}
 
-	//printf("Foram guardados %d bytes!\n", aux);
+	printf("Foram guardados %d bytes!\n", aux);
 	return counter;
 }
 

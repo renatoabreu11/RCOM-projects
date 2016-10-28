@@ -44,6 +44,9 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     return -1;
   }
 
+  printf("Recebidas %d tramas\n", frameCounter);
+
+
   ret = llclose(app->fileDescriptor);
   if(ret == -1){
     return -1;
@@ -200,12 +203,10 @@ int receiveData(){
       continue;
     } else {
       frameCounter++;
-      if(frameCounter == 256){
+      if(frameCounter == 256)
         frameCounter = 1;
-      }
 
       fwrite(buffer, 1, length, file);
-
       memset(buffer, 0, app->dataLength);
 
       bytesRead += length;
@@ -276,18 +277,21 @@ int receiveInformation(unsigned char *buffer, int *length){
   if((packageSize = llread(app->fileDescriptor, package)) == -1)
     return -1;
 
-  int C = package[0];
+    int C = package[0];
+
   if(C != CONTROL_DATA){
     printf("%s\n", "wrong C flag ");
     return -1;
   }
 
   int N = package[1];
-  //printf("N = %d\n", N);
-  if(N != frameCounter){
+
+ if(N != frameCounter){
     printf("%s\n", "neh");
     return -1;
   }
+
+  printf("Frame counter = %d, N = %d\n", frameCounter, N);
 
   int l2 = package[2];
   int l1 = package[3];
