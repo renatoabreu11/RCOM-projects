@@ -369,7 +369,7 @@ int showTransmitterStatistics(int numREJreceived, int numFrameItransmitted, int 
   printf("\n\n");
 
   printf("Number of 'I' frames sent: %d\n", numFrameItransmitted);
-	//printf("Number of 'REJ' frames received: %d\n", numREJtransmissions);
+  printf("Number of 'REJ' frames received: %d\n", numREJreceived);
   printf("Number of time outs: %d\n", numTimeOuts);
 
   printf("\n\n");
