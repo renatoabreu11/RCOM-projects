@@ -166,7 +166,7 @@ int sendInformation(unsigned char * buffer, int length){
   dataPackage[1] = frameCounter ;
   dataPackage[2] = length / 256 ;
   dataPackage[3] = length % 256;
-
+  printf("Frame counter: %d\n", frameCounter);
   int i = 0;
   for(; i < length; i++){
     dataPackage[i+DataHeaders] = buffer[i];

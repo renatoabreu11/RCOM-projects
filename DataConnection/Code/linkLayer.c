@@ -80,12 +80,9 @@ int llopen(int status, int port){
 }
 
 int llwrite(unsigned char * buffer, int length, int fd){
-	printf("Frame Initial length: %d\n", length);
 	int newSize = length + 6;
 	unsigned char *frame = createDataFrame(buffer, length);
-	printf("Frame length after header and trailer: %d\n", newSize);
 	int sizeAfterStuff = byteStuffing(&frame, newSize);
-	printf("Frame length after stuffing: %d\n", sizeAfterStuff);
 
 	int bytesSent;
 	int nTry = 1;
@@ -320,7 +317,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 	timer = 1;
 	switch(flagType){
 		case UA: printf("Waiting for UA flag...\n"); control = C_UA; break;
-		case RR: printf("Waiting for RR flag...\n"); control = linkLayer->controlRR; break;
+		case RR: /*printf("Waiting for RR flag...\n");*/ control = linkLayer->controlRR; break;
 		case DISC: printf("Waiting for DISC flag...\n"); control = C_DISC; break;
 		case SET: printf("Waiting for SET flag...\n"); control = C_SET; timer = linkLayer->timeout+1; break;
 	}
@@ -414,7 +411,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 
 				if(!receivedREJ)
 					if(flagType == 1){
-						printf("%s\n", "NS Received and updated");
+						//printf("%s\n", "NS Received and updated");
 						updateNs();
 					}
 
