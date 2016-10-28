@@ -145,7 +145,7 @@ int llread(int fd, unsigned char *package){
 
 	while(1) {
 		buffer = malloc(MAX_FRAME_LENGTH);
-		
+
 		length = readDataFrame(fd, buffer);
 		printf("Frame length with stuffing: %d\n", length);
 
