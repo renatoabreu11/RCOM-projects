@@ -35,7 +35,6 @@
 typedef struct LinkLayer {
 	char port[20];
 	int baudRate;
-	unsigned int sequenceNumber;
 	unsigned int timeout;
 	unsigned int numTransmissions;
 	int frameLength;
@@ -82,7 +81,7 @@ int llwrite(unsigned char * buffer, int length, int fd);
  * @param  buffer [description]
  * @return        [description]
  */
-int llread(int fd, unsigned char * package);
+int llread(int fd, unsigned char * package, int numFrame);
 
 /**
  * [llclose description]

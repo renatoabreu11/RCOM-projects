@@ -194,27 +194,41 @@ int receiveData(){
 
   unsigned char* buffer = malloc(app->dataLength);
   int bytesRead = 0;
+  int receivedData;
+  int myRetransmissoes = 0;
 
   while (bytesRead < app->fileSize) {
     int length = 0;
+    receivedData = receiveInformation(buffer, &length);
 
-    if (receiveInformation(buffer, &length) == -1) {
-      printf("Error receiving data packet.\n");
-      continue;
-    } else {
-      frameCounter++;
-      if(frameCounter == 256)
-        frameCounter = 1;
+    switch(receivedData) {
+      case -1:
+        printf("Error receiving data packet.\n");
+        continue;
+        break;          //NECESSARY??????????????????????????????????????????????
+      case -2:
+        fseek(file, -length, SEEK_CUR);
 
-      fwrite(buffer, 1, length, file);
-      memset(buffer, 0, app->dataLength);
+        fwrite(buffer, 1, length, file);
+        memset(buffer, 0, app->dataLength);
+        myRetransmissoes++;
+        break;
+      default:
+        frameCounter++;
+        if(frameCounter == 256)
+          frameCounter = 1;
 
-      bytesRead += length;
-      //printf("Bytes read: %d\n", bytesRead);
+        fwrite(buffer, 1, length, file);
+        memset(buffer, 0, app->dataLength);
+
+        bytesRead += length;
+        //printf("Bytes read: %d\n", bytesRead);
+        break;
     }
+    printf("Bytes read: %d\n", bytesRead);
   }
 
-  printf("Vamos receber o DISC!!!\n\n\n");
+  printf("\n*********************\nForam recebidos %d frames, com %d retransmissoes!\n****************", frameCounter, myRetransmissoes);
 
   if(receiveControl(CONTROL_END) == -1){
     printf("%s\n", "Error receiving END control packet");
@@ -228,7 +242,7 @@ int receiveData(){
 int receiveControl(int control){
   unsigned char *package = malloc(app->dataLength);
   int packageSize;
-  if((packageSize = llread(app->fileDescriptor, package)) == -1)
+  if((packageSize = llread(app->fileDescriptor, package, frameCounter)) == -1)
     return -1;
   int j = 0;
   printf("Package size %d\n", packageSize);
@@ -274,24 +288,19 @@ int receiveControl(int control){
 int receiveInformation(unsigned char *buffer, int *length){
   unsigned char *package = malloc(app->dataLength);
   int packageSize;
-  if((packageSize = llread(app->fileDescriptor, package)) == -1)
+  if((packageSize = llread(app->fileDescriptor, package,frameCounter)) == -1)
     return -1;
 
     int C = package[0];
 
   if(C != CONTROL_DATA){
-    printf("%s\n", "wrong C flag ");
+    printf("%s\n", "wrong C flag\n");
     return -1;
   }
 
   int N = package[1];
 
- if(N != frameCounter){
-    printf("%s\n", "neh");
-    return -1;
-  }
-
-  printf("Frame counter = %d, N = %d\n", frameCounter, N);
+  printf("Frame counter = %d, N = %d\n\n", frameCounter, N);
 
   int l2 = package[2];
   int l1 = package[3];
@@ -306,6 +315,11 @@ int receiveInformation(unsigned char *buffer, int *length){
   //printf("Tamanho do package = %d\n", packageSize);
 
   free(package);
+
+  if(N != frameCounter){
+     printf("%s\n", "neh");
+     return -2;
+   }
 
   return 1;
 }

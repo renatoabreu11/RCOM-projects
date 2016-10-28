@@ -14,7 +14,6 @@ int initLinkLayer(int port, int baudrate, int retries, int timeout) {
 	linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
 	sprintf(linkLayer->port ,"/dev/ttyS%d", port);
 	linkLayer->baudRate = getBaud(baudrate);
-	linkLayer->sequenceNumber = 0;
 	linkLayer->timeout = timeout;
 	linkLayer->numTransmissions = retries;
 	linkLayer->ns = 0;
@@ -107,13 +106,15 @@ int llwrite(unsigned char * buffer, int length, int fd){
 }
 
 int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, int length, int dataSize) {
-
-	printf("C = %02X\n\n", linkLayer->controlI);
-
 	//Check if Control is wrong (using Ns)
 	if(buffer[2] != linkLayer->controlI) {
 		linkLayer->numREJtransmissions++;
+
+		if((buffer[2] << 7) != linkLayer->controlI)
+			updateNs();
+
 		sendSupervision(fd, linkLayer->controlREJ);
+		printf("*********************************************************************\nError during Control\n");
 		return -1;
 	}
 
@@ -121,6 +122,7 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 	if(buffer[3] != (buffer[1] ^ buffer[2])) {
 		linkLayer->numREJtransmissions++;
 		sendSupervision(fd, linkLayer->controlREJ);
+		printf("Error during BCC1\n");
 		return -1;
 	}
 
@@ -133,13 +135,14 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 		//printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
 		linkLayer->numREJtransmissions++;
 		sendSupervision(fd, linkLayer->controlREJ);
+		printf("Error during BCC2\n");
 		return -1;
 	}
 
 	return 0;
 }
 
-int llread(int fd, unsigned char *package){
+int llread(int fd, unsigned char *package, int numFrame){
 	unsigned char * buffer;
 	int length, dataSize;
 
@@ -147,14 +150,12 @@ int llread(int fd, unsigned char *package){
 		buffer = malloc(MAX_FRAME_LENGTH);
 
 		length = readDataFrame(fd, buffer);
-
 		if(length == -1) {
-			printf("Erro, lendo de novo\n");
+			printf("Error reading frame, trying again...\n");
 			continue;
 		}
 
 		printf("Frame length with stuffing: %d\n", length);
-
 		length = byteDestuffing(&buffer, length);
 		printf("Frame length after destuff: %d\n",length);
 
@@ -163,14 +164,15 @@ int llread(int fd, unsigned char *package){
 
 		memcpy(package, &buffer[4], dataSize);
 
+		printf("Esta e a frame %d\n", numFrame);
 		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
 			free(buffer);
 			continue;
 		}
 
 		//Sends RR
+		printf("Frame %d enviando RR\n", numFrame);
 		sendSupervision(fd, linkLayer->controlRR);
-
 		updateNs();
 		free(buffer);
 		break;
@@ -494,6 +496,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 
 		if(res == -1)
 			return -1;
+
 		//If the number of bytes read is 0, there's no need to put them in the buffer
 		if(res == 0)
 			continue;
@@ -505,6 +508,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 				current = flagRCV;
 			}
 			break;
+
 			case flagRCV:
 			if(byteRead == A){
 				current = aRCV;
@@ -515,6 +519,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 				counter = 0;
 			}
 			break;
+
 			case aRCV:
 			if(byteRead == FLAG){
 				current = flagRCV;
@@ -524,6 +529,7 @@ int readDataFrame(int fd, unsigned char *frame) {
 				frame[counter++] = byteRead;
 			}
 			break;
+
 			case cRCV:
 			if(byteRead == FLAG){
 				current = flagRCV;
