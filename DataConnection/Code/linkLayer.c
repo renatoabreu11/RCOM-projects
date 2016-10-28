@@ -165,7 +165,6 @@ int llread(int fd, unsigned char *package){
 		memcpy(package, &buffer[4], dataSize);
 
 		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
-			return -1;
 			free(buffer);
 			continue;
 		}
@@ -543,24 +542,31 @@ int readDataFrame(int fd, unsigned char *frame) {
 			if(byteRead == FLAG){
 				frame[counter++] = byteRead;
 				current = stop;
-			}else{
-				frame[counter++] = byteRead;
-				aux++;
-			}
-			break;
 
-			case stop:{
-				if(byteRead == A) {
+				//We check if there's another byte waiting to be read.
+				//If there is, that means the transmitter send the same frame again to be read
+				char nextByte;
+				res = read(fd, &nextByte, 1);
+
+				if(res == 0)
+					STOP = TRUE;
+				else if(nextByte == A) {
 					current = aRCV;
 					frame[0] = FLAG;
 					frame[1] = A;
 					counter = 2;
 					aux = 0;
 				}
-				else
-					STOP = TRUE;
+				break;
+			}else{
+				frame[counter++] = byteRead;
+				aux++;
 				break;
 			}
+
+			case stop:
+					STOP = TRUE;
+				break;
 
 			default: break;
 		}
