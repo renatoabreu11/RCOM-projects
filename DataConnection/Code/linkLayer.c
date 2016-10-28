@@ -9,6 +9,10 @@ int timer = 1, flag = 1;
 typedef enum {start, flagRCV, aRCV, cRCV, BCC, stop} state;
 
 LinkLayer *linkLayer;
+int numFrameI = 0;
+int numFrameItransmitted = 0;
+int numTimeOuts = 0;
+int numREJreceived = 0;
 
 int initLinkLayer(int port, int baudrate, int retries, int timeout) {
 	linkLayer = (LinkLayer *) malloc(sizeof(LinkLayer));
@@ -17,7 +21,7 @@ int initLinkLayer(int port, int baudrate, int retries, int timeout) {
 	linkLayer->timeout = timeout;
 	linkLayer->numTransmissions = retries;
 	linkLayer->ns = 0;
-	linkLayer->numREJtransmissions = 0;
+	linkLayer->numREJ = 0;
 	linkLayer->controlI = C_I;
 	linkLayer->controlRR = C_RR;
 	linkLayer->controlREJ = C_REJ;
@@ -87,9 +91,8 @@ int llwrite(unsigned char * buffer, int length, int fd){
 	int nTry = 1;
 	int messageReceived = 0;
 	while(nTry <= linkLayer->numTransmissions && !messageReceived){
-		printf("Tentativa %d\n",nTry);
-
 		bytesSent = write(fd, frame, sizeAfterStuff);
+		numFrameItransmitted++;
 		if(bytesSent != sizeAfterStuff){
 			printf("%s\n", "Error sending data packet");
 			return -1;
@@ -108,7 +111,7 @@ int llwrite(unsigned char * buffer, int length, int fd){
 int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, int length, int dataSize) {
 	//Check if Control is wrong (using Ns)
 	if(buffer[2] != linkLayer->controlI) {
-		linkLayer->numREJtransmissions++;
+		linkLayer->numREJ++;
 
 		if((buffer[2] << 7) != linkLayer->controlI)
 			updateNs();
@@ -120,7 +123,7 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 
 	//Checks if BCC1 is wrong
 	if(buffer[3] != (buffer[1] ^ buffer[2])) {
-		linkLayer->numREJtransmissions++;
+		linkLayer->numREJ++;
 		sendSupervision(fd, linkLayer->controlREJ);
 		printf("Error during BCC1\n");
 		return -1;
@@ -133,7 +136,7 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 	if(bcc2Read != bcc2FromBytes){
 		//printf("Different BCC's\n");
 		//printf("bcc2Read = %c, bcc2FromBytes = %c\n", bcc2Read, bcc2FromBytes);
-		linkLayer->numREJtransmissions++;
+		linkLayer->numREJ++;
 		sendSupervision(fd, linkLayer->controlREJ);
 		printf("Error during BCC2\n");
 		return -1;
@@ -188,7 +191,7 @@ int llclose(int fd){
 	}
 	close(fd);
 
-	printf("Rej transmissions %d\n", linkLayer->numREJtransmissions);
+	printf("Rej transmissions %d\n", linkLayer->numREJ);
 
 	return 1;
 }
@@ -350,7 +353,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 		if(res == 0)
 			continue;
 		else if(res == -1)
-			return -1;			//HANDLE THIS RETURN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			return -1;
 
 		if(res > 0)
 			buf[res]=0;
@@ -405,7 +408,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 						printf("RR flag received!\n"); break;
 					}
 					else{
-						linkLayer->numREJtransmissions++;
+						linkLayer->numREJ++;
 						printf("An error ocurred. REJ flag received!\n");
 						return -1;
 					}
@@ -481,6 +484,7 @@ int byteDestuffing(unsigned char** frame, int length){
 void atende(){
 	flag=1;
 	timer++;
+	numTimeOuts++;
 }
 
 int readDataFrame(int fd, unsigned char *frame) {
@@ -489,7 +493,6 @@ int readDataFrame(int fd, unsigned char *frame) {
 	unsigned char byteRead;
 	state current = start;
 	STOP = FALSE;
-	int aux = 0;
 
 	while(STOP == FALSE) {
 		res = read(fd, &byteRead, 1);
@@ -560,12 +563,10 @@ int readDataFrame(int fd, unsigned char *frame) {
 					frame[0] = FLAG;
 					frame[1] = A;
 					counter = 2;
-					aux = 0;
 				}
 				break;
 			}else{
 				frame[counter++] = byteRead;
-				aux++;
 				break;
 			}
 
@@ -577,7 +578,8 @@ int readDataFrame(int fd, unsigned char *frame) {
 		}
 	}
 
-	printf("Foram guardados %d bytes!\n", aux);
+	numFrameI++;
+	printf("Numero de tramas = %d\n", numFrameI);
 	return counter;
 }
 
@@ -585,9 +587,9 @@ void updateNs() {
 	if(linkLayer->ns == 0){
 		linkLayer->ns = 1;
 	}
-	else{
+	else
 		linkLayer->ns = 0;
-	}
+
 	TOOGLE_BIT(linkLayer->controlI, 6);
 	TOOGLE_BIT(linkLayer->controlRR, 7);
 	TOOGLE_BIT(linkLayer->controlREJ, 7);
@@ -602,4 +604,19 @@ int getBaud(int baudrate){
 		case 115200: return B115200;
 	}
 	return B115200;
+}
+int getNumREJ() {
+	return linkLayer->numREJ;
+}
+
+int getTotalITransmissions() {
+	return numFrameI;
+}
+
+int getNumFrameItransmitted() {
+	return numFrameItransmitted;
+}
+
+int getNumTimeOuts() {
+	return numTimeOuts;
 }

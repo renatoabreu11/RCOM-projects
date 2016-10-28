@@ -44,13 +44,21 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     return -1;
   }
 
-  printf("Recebidas %d tramas\n", frameCounter);
-
-
   ret = llclose(app->fileDescriptor);
-  if(ret == -1){
+  if(ret == -1)
     return -1;
+
+  if(app->status == 0) {
+    int numFrameItransmitted = getNumFrameItransmitted();
+    int numTimeOuts = getNumTimeOuts();
+    int numREJreceived = getNumREJ();
+    showTransmitterStatistics(numREJreceived, numFrameItransmitted, numTimeOuts);
+  } else {
+    int numREJtransmissions = getNumREJ();
+    int numTotalITransmissions = getTotalITransmissions();
+    showReceiverStatistics(numREJtransmissions, numTotalITransmissions);
   }
+
   return 1;
 }
 
@@ -322,4 +330,56 @@ int receiveInformation(unsigned char *buffer, int *length){
    }
 
   return 1;
+}
+
+int showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions) {
+  printf("\n\n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("******RECEIVER****** \n");
+  printf("*****STATISTICS***** \n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("\n\n");
+
+  printf("Number of 'I' frames received withough errors: %d\n", frameCounter);
+  printf("Number of 'I' frames received with errors and ignored: %d\n", (numTotalITransmissions - frameCounter));
+	printf("Number of 'REJ' frames sent: %d\n", numREJtransmissions);
+
+  printf("\n\n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("********END********* \n");
+  printf("*****STATISTICS***** \n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("\n\n");
+
+	return 1;
+}
+
+int showTransmitterStatistics(int numREJreceived, int numFrameItransmitted, int numTimeOuts) {
+  printf("\n\n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("*****TRANSMITTER**** \n");
+  printf("*****STATISTICS***** \n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("\n\n");
+
+  printf("Number of 'I' frames sent: %d\n", numFrameItransmitted);
+	//printf("Number of 'REJ' frames received: %d\n", numREJtransmissions);
+  printf("Number of time outs: %d\n", numTimeOuts);
+
+  printf("\n\n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("********END********* \n");
+  printf("*****STATISTICS***** \n");
+  printf("#################### \n");
+  printf("#################### \n");
+  printf("\n\n");
+
+	return 1;
 }

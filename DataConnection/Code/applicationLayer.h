@@ -93,3 +93,7 @@ int receiveControl(int type);
  * @return        [description]
  */
 int receiveInformation(unsigned char *buffer, int *length);
+
+int showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions);
+
+int showTransmitterStatistics(int numREJreceived, int numFrameItransmitted, int numTimeOuts);

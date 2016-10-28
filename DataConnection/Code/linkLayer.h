@@ -40,7 +40,7 @@ typedef struct LinkLayer {
 	int frameLength;
 	int status;
 	int ns;
-	int numREJtransmissions;
+	int numREJ;
 	unsigned int controlI;
 	unsigned int controlRR;
 	unsigned int controlREJ;
@@ -207,4 +207,12 @@ void updateNs();
 
 /**
 */
-int getBaud(int baudrate);
+int getBaud(int baudrate);\
+
+int getNumREJ();
+
+int getTotalITransmissions();
+
+int getNumFrameItransmitted();
+
+int getNumTimeOuts();
