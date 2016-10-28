@@ -336,28 +336,32 @@ int waitForResponse(int fd, unsigned char flagType) {
 			}
 		}
 		res = read(fd,buf,1);     /* returns after 1 char have been input */
+
+
+		if(res == 0)
+			continue;
+		else if(res == -1)
+			return -1;			//HANDLE THIS RETURN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 		if(res > 0)
 			buf[res]=0;
 
 		switch(current){
-			case start:{
+			case start:
 				if(buf[0] == FLAG)
 					current = flagRCV;
 				break;
-			}
 
-			case flagRCV:{
+			case flagRCV:
 				if(buf[0] == A)
 					current = aRCV;
 				else if(buf[0] != FLAG)
 					current = start;
 				break;
-			}
 
-			case aRCV:{
-				if(buf[0] == linkLayer->controlREJ){
+			case aRCV:
+				if(buf[0] == linkLayer->controlREJ)
 					current = cRCV;
-				}
 				else if(buf[0] == control)
 					current = cRCV;
 				else if(buf[0] != FLAG)
@@ -365,9 +369,8 @@ int waitForResponse(int fd, unsigned char flagType) {
 				else
 					current = flagRCV;
 				break;
-			}
 
-			case cRCV:{
+			case cRCV:
 				if(buf[0] == (A^linkLayer->controlREJ)){
 					current = BCC;
 					receivedREJ = 1;
@@ -379,16 +382,15 @@ int waitForResponse(int fd, unsigned char flagType) {
 				else
 					current = flagRCV;
 				break;
-			}
 
-			case BCC:{
+			case BCC:
 				if(buf[0] == FLAG)
 					current = stop;
 				else
 					current = start;
-			}
 
-			case stop:{
+			case stop:
+				printf("Chego ao stop\n");
 				flag = 1;
 				switch(flagType){
 					case UA: printf("UA flag received!\n"); break;
@@ -404,16 +406,19 @@ int waitForResponse(int fd, unsigned char flagType) {
 					case DISC: printf("DISC flag received!\n"); break;
 					case SET: printf("SET flag received!\n"); break;
 				}
+
 				if(!receivedREJ)
 					if(flagType == 1){
 						printf("%s\n", "NS Received and updated");
 						updateNs();
 					}
-				return 1;
-			}
+
+					return 1;
+
 			default: break;
 		}
 	}
+	
 	return -1;
 }
 
