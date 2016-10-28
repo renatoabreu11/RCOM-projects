@@ -88,6 +88,8 @@ int llwrite(unsigned char * buffer, int length, int fd){
 	int nTry = 1;
 	int messageReceived = 0;
 	while(nTry <= linkLayer->numTransmissions && !messageReceived){
+		printf("Tentativa %d\n",nTry);
+
 		bytesSent = write(fd, frame, sizeAfterStuff);
 		if(bytesSent != sizeAfterStuff){
 			printf("%s\n", "Error sending data packet");
@@ -328,6 +330,8 @@ int waitForResponse(int fd, unsigned char flagType) {
 	if(flagType == SET)
 		STOP = FALSE;
 	else STOP = TRUE;
+	unsigned char wrongRej = linkLayer->controlREJ;
+	TOOGLE_BIT(wrongRej, 7);
 
 	state current = start;
 
@@ -363,9 +367,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 				break;
 
 			case aRCV:
-				if(buf[0] == linkLayer->controlREJ)
-					current = cRCV;
-				else if(buf[0] == control)
+				if(buf[0] == linkLayer->controlREJ || buf[0] == wrongRej || buf[0] == control)
 					current = cRCV;
 				else if(buf[0] != FLAG)
 					current = start;
@@ -374,7 +376,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 				break;
 
 			case cRCV:
-				if(buf[0] == (A^linkLayer->controlREJ)){
+				if(buf[0] == (A^linkLayer->controlREJ) || buf[0] == (A^wrongRej)){
 					current = BCC;
 					receivedREJ = 1;
 				}
@@ -402,7 +404,7 @@ int waitForResponse(int fd, unsigned char flagType) {
 					}
 					else{
 						linkLayer->numREJtransmissions++;
-						printf("An error ocurred. REJ flag received!\n"); break;
+						printf("An error ocurred. REJ flag received!\n");
 						return -1;
 					}
 					case DISC: printf("DISC flag received!\n"); break;
