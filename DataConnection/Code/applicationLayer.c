@@ -344,7 +344,8 @@ int showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions) 
   printf("\n\n");
 
   printf("Number of 'I' frames received withough errors: %d\n", frameCounter);
-  printf("Number of 'I' frames received with errors and ignored: %d\n", (numTotalITransmissions - frameCounter));
+  //Since frameCounter starts at 1, we need to take that value out
+  printf("Number of 'I' frames received with errors and ignored: %d\n", (numTotalITransmissions - frameCounter - 1));
 	printf("Number of 'REJ' frames sent: %d\n", numREJtransmissions);
 
   printf("\n\n");
