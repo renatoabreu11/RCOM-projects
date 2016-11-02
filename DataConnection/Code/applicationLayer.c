@@ -8,8 +8,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
   if (app == NULL)
   return -1;
 
-  initLinkLayer(port, baudRate, retries, timeout);
-  int ret = llopen(status, port);
+  int ret = initLinkLayer(port, status, baudRate, retries, timeout);
   if(ret == -1){
     return -1;
   } else{
@@ -31,17 +30,20 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     }
   }
 
-  if(estabilishConnection(app->fileDescriptor) == -1){
+  if(llopen(app->fileDescriptor) == -1){
     llclose(app->fileDescriptor);
     return -1;
   }
-  if(startConnection() == -1){
-    llclose(app->fileDescriptor);
-    return -1;
-  }
-  if(endConnection(app->fileDescriptor) == -1){
-    llclose(app->fileDescriptor);
-    return -1;
+  int numTries = 1;
+  while(numTries < 3){
+    if(startConnection() == -1){
+      llclose(app->fileDescriptor);
+      numTries++;  
+    }else break;
+    if(llopen(app->fileDescriptor) == -1){
+      llclose(app->fileDescriptor);
+      return -1;
+    }
   }
 
   ret = llclose(app->fileDescriptor);

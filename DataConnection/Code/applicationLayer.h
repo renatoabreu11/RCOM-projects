@@ -47,7 +47,6 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
 
 /**
  * [startConnection description]
- * @param  app [description]
  * @return     [description]
  */
 int startConnection();

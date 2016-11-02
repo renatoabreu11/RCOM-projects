@@ -1,0 +1,184 @@
+\hypertarget{main_8c}{}\section{main.\+c File Reference}
+\label{main_8c}\index{main.\+c@{main.\+c}}
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$fcntl.\+h$>$}\newline
+{\ttfamily \#include $<$termios.\+h$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$strings.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$errno.\+h$>$}\newline
+{\ttfamily \#include $<$limits.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}application\+Layer.\+h\char`\"{}}\newline
+Include dependency graph for main.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{main_8c_a205bfd5349a94d425cc771159c8bb755}{CI}~0x00
+\item 
+\#define \hyperlink{main_8c_a815ebc2f4c052e05ccc7b8c415bb1cb7}{C\+RR}~0x85
+\item 
+\#define \hyperlink{main_8c_aeccb130d8ddbb14ba179b27f93c3930c}{C\+R\+EJ}~0x81
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{main_8c_a00a75e648d56be0049c148bbc29e6ace}{clear\+\_\+stream} (F\+I\+LE $\ast$in)
+\item 
+int \hyperlink{main_8c_a3dfe081abf5b9d24ee8bb5b453c35b38}{choose\+Parameter} (char $\ast$type)
+\item 
+void \hyperlink{main_8c_aab5d1b442d3e37e3fcc95dbaf6ca375f}{check\+Baud\+Rate\+Value} ()
+\item 
+void \hyperlink{main_8c_ab294aebe6dd8338683fb8aff32eb965c}{show\+Menu} (int port, int status)
+\item 
+int \hyperlink{main_8c_a3c04138a5bfe5d72780bb7e82a18e627}{main} (int argc, char $\ast$$\ast$argv)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{main_8c_a352a05efbed742a2c47e738725ee5613}{baud\+Rate} = 57600
+\item 
+int \hyperlink{main_8c_aa95a44e96a37a41a2447e8d87bf6085c}{package\+Length} = 255
+\item 
+int \hyperlink{main_8c_a8ba735ab56b2afeb844916994c86f3f5}{retries} = 3
+\item 
+int \hyperlink{main_8c_a06dc12856a55ec587f896fe87dd09ac5}{time\+Out} = 2
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{main_8c_a205bfd5349a94d425cc771159c8bb755}{}\label{main_8c_a205bfd5349a94d425cc771159c8bb755} 
+\index{main.\+c@{main.\+c}!CI@{CI}}
+\index{CI@{CI}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{CI}{CI}}
+{\footnotesize\ttfamily \#define CI~0x00}
+
+\hypertarget{main_8c_aeccb130d8ddbb14ba179b27f93c3930c}{}\label{main_8c_aeccb130d8ddbb14ba179b27f93c3930c} 
+\index{main.\+c@{main.\+c}!C\+R\+EJ@{C\+R\+EJ}}
+\index{C\+R\+EJ@{C\+R\+EJ}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{C\+R\+EJ}{CREJ}}
+{\footnotesize\ttfamily \#define C\+R\+EJ~0x81}
+
+\hypertarget{main_8c_a815ebc2f4c052e05ccc7b8c415bb1cb7}{}\label{main_8c_a815ebc2f4c052e05ccc7b8c415bb1cb7} 
+\index{main.\+c@{main.\+c}!C\+RR@{C\+RR}}
+\index{C\+RR@{C\+RR}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{C\+RR}{CRR}}
+{\footnotesize\ttfamily \#define C\+RR~0x85}
+
+
+
+\subsection{Function Documentation}
+\hypertarget{main_8c_aab5d1b442d3e37e3fcc95dbaf6ca375f}{}\label{main_8c_aab5d1b442d3e37e3fcc95dbaf6ca375f} 
+\index{main.\+c@{main.\+c}!check\+Baud\+Rate\+Value@{check\+Baud\+Rate\+Value}}
+\index{check\+Baud\+Rate\+Value@{check\+Baud\+Rate\+Value}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{check\+Baud\+Rate\+Value()}{checkBaudRateValue()}}
+{\footnotesize\ttfamily void check\+Baud\+Rate\+Value (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c_aab5d1b442d3e37e3fcc95dbaf6ca375f_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{main_8c_a3dfe081abf5b9d24ee8bb5b453c35b38}{}\label{main_8c_a3dfe081abf5b9d24ee8bb5b453c35b38} 
+\index{main.\+c@{main.\+c}!choose\+Parameter@{choose\+Parameter}}
+\index{choose\+Parameter@{choose\+Parameter}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{choose\+Parameter()}{chooseParameter()}}
+{\footnotesize\ttfamily int choose\+Parameter (\begin{DoxyParamCaption}\item[{char $\ast$}]{type }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=282pt]{main_8c_a3dfe081abf5b9d24ee8bb5b453c35b38_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=346pt]{main_8c_a3dfe081abf5b9d24ee8bb5b453c35b38_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{main_8c_a00a75e648d56be0049c148bbc29e6ace}{}\label{main_8c_a00a75e648d56be0049c148bbc29e6ace} 
+\index{main.\+c@{main.\+c}!clear\+\_\+stream@{clear\+\_\+stream}}
+\index{clear\+\_\+stream@{clear\+\_\+stream}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{clear\+\_\+stream()}{clear\_stream()}}
+{\footnotesize\ttfamily void clear\+\_\+stream (\begin{DoxyParamCaption}\item[{F\+I\+LE $\ast$}]{in }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c_a00a75e648d56be0049c148bbc29e6ace_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{main_8c_a3c04138a5bfe5d72780bb7e82a18e627}{}\label{main_8c_a3c04138a5bfe5d72780bb7e82a18e627} 
+\index{main.\+c@{main.\+c}!main@{main}}
+\index{main@{main}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char $\ast$$\ast$}]{argv }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c_a3c04138a5bfe5d72780bb7e82a18e627_cgraph}
+\end{center}
+\end{figure}
+\hypertarget{main_8c_ab294aebe6dd8338683fb8aff32eb965c}{}\label{main_8c_ab294aebe6dd8338683fb8aff32eb965c} 
+\index{main.\+c@{main.\+c}!show\+Menu@{show\+Menu}}
+\index{show\+Menu@{show\+Menu}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{show\+Menu()}{showMenu()}}
+{\footnotesize\ttfamily void show\+Menu (\begin{DoxyParamCaption}\item[{int}]{port,  }\item[{int}]{status }\end{DoxyParamCaption})}
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{main_8c_ab294aebe6dd8338683fb8aff32eb965c_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=217pt]{main_8c_ab294aebe6dd8338683fb8aff32eb965c_icgraph}
+\end{center}
+\end{figure}
+
+
+\subsection{Variable Documentation}
+\hypertarget{main_8c_a352a05efbed742a2c47e738725ee5613}{}\label{main_8c_a352a05efbed742a2c47e738725ee5613} 
+\index{main.\+c@{main.\+c}!baud\+Rate@{baud\+Rate}}
+\index{baud\+Rate@{baud\+Rate}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{baud\+Rate}{baudRate}}
+{\footnotesize\ttfamily int baud\+Rate = 57600}
+
+\hypertarget{main_8c_aa95a44e96a37a41a2447e8d87bf6085c}{}\label{main_8c_aa95a44e96a37a41a2447e8d87bf6085c} 
+\index{main.\+c@{main.\+c}!package\+Length@{package\+Length}}
+\index{package\+Length@{package\+Length}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{package\+Length}{packageLength}}
+{\footnotesize\ttfamily int package\+Length = 255}
+
+\hypertarget{main_8c_a8ba735ab56b2afeb844916994c86f3f5}{}\label{main_8c_a8ba735ab56b2afeb844916994c86f3f5} 
+\index{main.\+c@{main.\+c}!retries@{retries}}
+\index{retries@{retries}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{retries}{retries}}
+{\footnotesize\ttfamily int retries = 3}
+
+\hypertarget{main_8c_a06dc12856a55ec587f896fe87dd09ac5}{}\label{main_8c_a06dc12856a55ec587f896fe87dd09ac5} 
+\index{main.\+c@{main.\+c}!time\+Out@{time\+Out}}
+\index{time\+Out@{time\+Out}!main.\+c@{main.\+c}}
+\subsubsection{\texorpdfstring{time\+Out}{timeOut}}
+{\footnotesize\ttfamily int time\+Out = 2}
+

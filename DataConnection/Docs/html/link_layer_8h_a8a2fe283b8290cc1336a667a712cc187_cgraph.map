@@ -1,0 +1,9 @@
+<map id="llread" name="llread">
+<area shape="rect" id="node2" href="$link_layer_8c.html#abfbd40d058faa134b9034af9d2d865d9" title="readDataFrame" alt="" coords="125,5,236,32"/>
+<area shape="rect" id="node3" href="$link_layer_8c.html#a888914efd19822deb27e1f0a5cacca94" title="byteDestuffing" alt="" coords="129,56,233,83"/>
+<area shape="rect" id="node5" href="$link_layer_8c.html#a520783778c9b115983967fe315306e36" title="checkForFrameErrors" alt="" coords="107,157,255,184"/>
+<area shape="rect" id="node6" href="$link_layer_8c.html#a927fcc5a512622e7fc4b688966241284" title="updateNs" alt="" coords="322,107,399,133"/>
+<area shape="rect" id="node7" href="$link_layer_8c.html#af4c7f81a4d22d375976891988ef065c8" title="sendSupervision" alt="" coords="303,208,419,235"/>
+<area shape="rect" id="node4" href="$link_layer_8c.html#aa6727c503e5fa4edab84052556382a11" title="countPatterns" alt="" coords="309,56,412,83"/>
+<area shape="rect" id="node8" href="$link_layer_8c.html#aaa527233d90b0499478a918eea3f1d19" title="calculateBCC2" alt="" coords="307,157,415,184"/>
+</map>

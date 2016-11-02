@@ -1,0 +1,12 @@
+<map id="receiveData" name="receiveData">
+<area shape="rect" id="node2" href="$application_layer_8c.html#a0eb8290592d5779503b7dd04fbabdb06" title="receiveControl" alt="" coords="154,81,257,108"/>
+<area shape="rect" id="node11" href="$application_layer_8c.html#a931c3be900b6917c46372f158c19022b" title="receiveInformation" alt="" coords="143,132,268,159"/>
+<area shape="rect" id="node3" href="$link_layer_8c.html#a8a2fe283b8290cc1336a667a712cc187" title="llread" alt="" coords="316,107,369,133"/>
+<area shape="rect" id="node4" href="$link_layer_8c.html#abfbd40d058faa134b9034af9d2d865d9" title="readDataFrame" alt="" coords="436,5,547,32"/>
+<area shape="rect" id="node5" href="$link_layer_8c.html#a888914efd19822deb27e1f0a5cacca94" title="byteDestuffing" alt="" coords="439,56,543,83"/>
+<area shape="rect" id="node7" href="$link_layer_8c.html#a520783778c9b115983967fe315306e36" title="checkForFrameErrors" alt="" coords="417,157,565,184"/>
+<area shape="rect" id="node8" href="$link_layer_8c.html#a927fcc5a512622e7fc4b688966241284" title="updateNs" alt="" coords="633,107,710,133"/>
+<area shape="rect" id="node9" href="$link_layer_8c.html#af4c7f81a4d22d375976891988ef065c8" title="sendSupervision" alt="" coords="613,208,729,235"/>
+<area shape="rect" id="node6" href="$link_layer_8c.html#aa6727c503e5fa4edab84052556382a11" title="countPatterns" alt="" coords="620,56,723,83"/>
+<area shape="rect" id="node10" href="$link_layer_8c.html#aaa527233d90b0499478a918eea3f1d19" title="calculateBCC2" alt="" coords="617,157,725,184"/>
+</map>

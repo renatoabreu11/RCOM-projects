@@ -1,0 +1,11 @@
+var searchData=
+[
+  ['sendcontrol',['sendControl',['../application_layer_8c.html#a73ecb47d14db1fb6e2554940364ff040',1,'sendControl(int type):&#160;applicationLayer.c'],['../application_layer_8h.html#a73ecb47d14db1fb6e2554940364ff040',1,'sendControl(int type):&#160;applicationLayer.c']]],
+  ['senddata',['sendData',['../application_layer_8c.html#a558000e1f87b3b852f73e20ba0a6b0f4',1,'sendData():&#160;applicationLayer.c'],['../application_layer_8h.html#a558000e1f87b3b852f73e20ba0a6b0f4',1,'sendData():&#160;applicationLayer.c']]],
+  ['sendinformation',['sendInformation',['../application_layer_8c.html#a7a2e353b862e29a450830649a7f113c9',1,'sendInformation(unsigned char *buffer, int length):&#160;applicationLayer.c'],['../application_layer_8h.html#a7a2e353b862e29a450830649a7f113c9',1,'sendInformation(unsigned char *buffer, int length):&#160;applicationLayer.c']]],
+  ['sendsupervision',['sendSupervision',['../link_layer_8c.html#af4c7f81a4d22d375976891988ef065c8',1,'sendSupervision(int fd, unsigned char control):&#160;linkLayer.c'],['../link_layer_8h.html#af4c7f81a4d22d375976891988ef065c8',1,'sendSupervision(int fd, unsigned char control):&#160;linkLayer.c']]],
+  ['showmenu',['showMenu',['../main_8c.html#ab294aebe6dd8338683fb8aff32eb965c',1,'main.c']]],
+  ['showreceiverstatistics',['showReceiverStatistics',['../application_layer_8c.html#a0ac5863989f90535cb0fecae68437202',1,'showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions):&#160;applicationLayer.c'],['../application_layer_8h.html#a0ac5863989f90535cb0fecae68437202',1,'showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions):&#160;applicationLayer.c']]],
+  ['showtransmitterstatistics',['showTransmitterStatistics',['../application_layer_8c.html#ab2509db0c3dc8c88c9a678df0120bc21',1,'showTransmitterStatistics(int numREJreceived, int numFrameItransmitted, int numTimeOuts):&#160;applicationLayer.c'],['../application_layer_8h.html#ab2509db0c3dc8c88c9a678df0120bc21',1,'showTransmitterStatistics(int numREJreceived, int numFrameItransmitted, int numTimeOuts):&#160;applicationLayer.c']]],
+  ['startconnection',['startConnection',['../application_layer_8c.html#a3622090a7ff391221a74cad6493bbca9',1,'startConnection():&#160;applicationLayer.c'],['../application_layer_8h.html#a3622090a7ff391221a74cad6493bbca9',1,'startConnection():&#160;applicationLayer.c']]]
+];

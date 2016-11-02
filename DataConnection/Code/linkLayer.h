@@ -51,21 +51,21 @@ typedef struct LinkLayer {
 /**
  * [initLinkLayer description]
  * @param  port        [description]
+ * @param  status      [description]
  * @param  baudRate    [description]
  * @param  packageSize [description]
  * @param  retries     [description]
  * @param  timeout     [description]
  * @return             [description]
  */
-int initLinkLayer(int port, int baudRate, int retries, int timeout);
+int initLinkLayer(int port, int status, int baudRate, int retries, int timeout);
 
 /**
  * [llopen description]
- * @param  status [description]
- * @param  port   [description]
- * @return        [description]
+ * @param  fd [description]
+ * @return    [description]
  */
-int llopen(int status, int port);
+int llopen(int fd);
 
 /**
  * [llwrite description]

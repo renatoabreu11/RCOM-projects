@@ -1,0 +1,408 @@
+\hypertarget{application_layer_8h}{}\section{application\+Layer.\+h File Reference}
+\label{application_layer_8h}\index{application\+Layer.\+h@{application\+Layer.\+h}}
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$fcntl.\+h$>$}\newline
+{\ttfamily \#include $<$termios.\+h$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$strings.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}link\+Layer.\+h\char`\"{}}\newline
+Include dependency graph for application\+Layer.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=240pt]{application_layer_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_application_layer}{Application\+Layer}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{application_layer_8h_abf940742e1b38f8100a344f9275d4086}{B\+U\+F\+\_\+\+M\+AX}~255
+\item 
+\#define \hyperlink{application_layer_8h_a2f79666675d7ae9fdfdb3a825ef55d5a}{C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA}~0x01
+\item 
+\#define \hyperlink{application_layer_8h_ab3a620b0bd8e67f0942ba85c71c094bb}{C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT}~0x02
+\item 
+\#define \hyperlink{application_layer_8h_abaab712c949e54f62908fddc254e46b1}{C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND}~0x03
+\item 
+\#define \hyperlink{application_layer_8h_af3c3df6c9906ede8f09fa2af74cb28d5}{F\+I\+L\+E\+\_\+\+S\+I\+ZE}~0x00
+\item 
+\#define \hyperlink{application_layer_8h_ab117546549783a058d0321a287699579}{F\+I\+L\+E\+\_\+\+N\+A\+ME}~0x01
+\item 
+\#define \hyperlink{application_layer_8h_a5b5ca0ae07e92e9cad54568049f06fce}{Data\+Headers}~4
+\item 
+\#define \hyperlink{application_layer_8h_ab983f03862f557a786ccc43b26522e16}{L2}~0x00
+\item 
+\#define \hyperlink{application_layer_8h_a455948b8bd5f5ce920899ae1013c4b4c}{R\+E\+C\+E\+I\+V\+ER}~1
+\item 
+\#define \hyperlink{application_layer_8h_a4dd2cc1f618201244956369378b75c9a}{T\+R\+A\+N\+S\+M\+I\+T\+T\+ER}~0
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{struct_application_layer}{Application\+Layer} \hyperlink{application_layer_8h_acaaa4243674fb079f4d233d17759f36b}{Application\+Layer}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{application_layer_8h_abdd55a6320cd4fbce91a0583d4ad05f5}{Init\+Application} (int port, int status, char $\ast$name, int \hyperlink{main_8c_a352a05efbed742a2c47e738725ee5613}{baud\+Rate}, int package\+Size, int \hyperlink{main_8c_a8ba735ab56b2afeb844916994c86f3f5}{retries}, int timeout)
+\item 
+int \hyperlink{application_layer_8h_a3622090a7ff391221a74cad6493bbca9}{start\+Connection} ()
+\item 
+int \hyperlink{application_layer_8h_a558000e1f87b3b852f73e20ba0a6b0f4}{send\+Data} ()
+\item 
+int \hyperlink{application_layer_8h_a73ecb47d14db1fb6e2554940364ff040}{send\+Control} (int type)
+\item 
+int \hyperlink{application_layer_8h_a7a2e353b862e29a450830649a7f113c9}{send\+Information} (unsigned char $\ast$buffer, int length)
+\item 
+int \hyperlink{application_layer_8h_a2809c0419ac7f54685983fd6d3477034}{receive\+Data} ()
+\item 
+int \hyperlink{application_layer_8h_a631126e029a493e74a1af5aacf2a7c16}{receive\+Control} (int type)
+\item 
+int \hyperlink{application_layer_8h_a931c3be900b6917c46372f158c19022b}{receive\+Information} (unsigned char $\ast$buffer, int $\ast$length)
+\item 
+int \hyperlink{application_layer_8h_a0ac5863989f90535cb0fecae68437202}{show\+Receiver\+Statistics} (int num\+R\+E\+Jtransmissions, int num\+Total\+I\+Transmissions)
+\item 
+int \hyperlink{application_layer_8h_ab2509db0c3dc8c88c9a678df0120bc21}{show\+Transmitter\+Statistics} (int \hyperlink{link_layer_8c_a08882678e9b70455b991496b0bf0f55b}{num\+R\+E\+Jreceived}, int \hyperlink{link_layer_8c_a0637f6d853eaa5a7e5bead66bc9ee567}{num\+Frame\+Itransmitted}, int \hyperlink{link_layer_8c_ad28672c114a1578ed97b0a73abbdc761}{num\+Time\+Outs})
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{application_layer_8h_abf940742e1b38f8100a344f9275d4086}{}\label{application_layer_8h_abf940742e1b38f8100a344f9275d4086} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!B\+U\+F\+\_\+\+M\+AX@{B\+U\+F\+\_\+\+M\+AX}}
+\index{B\+U\+F\+\_\+\+M\+AX@{B\+U\+F\+\_\+\+M\+AX}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{B\+U\+F\+\_\+\+M\+AX}{BUF\_MAX}}
+{\footnotesize\ttfamily \#define B\+U\+F\+\_\+\+M\+AX~255}
+
+\hypertarget{application_layer_8h_a2f79666675d7ae9fdfdb3a825ef55d5a}{}\label{application_layer_8h_a2f79666675d7ae9fdfdb3a825ef55d5a} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA@{C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA}}
+\index{C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA@{C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA}{CONTROL\_DATA}}
+{\footnotesize\ttfamily \#define C\+O\+N\+T\+R\+O\+L\+\_\+\+D\+A\+TA~0x01}
+
+\hypertarget{application_layer_8h_abaab712c949e54f62908fddc254e46b1}{}\label{application_layer_8h_abaab712c949e54f62908fddc254e46b1} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND@{C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND}}
+\index{C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND@{C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND}{CONTROL\_END}}
+{\footnotesize\ttfamily \#define C\+O\+N\+T\+R\+O\+L\+\_\+\+E\+ND~0x03}
+
+\hypertarget{application_layer_8h_ab3a620b0bd8e67f0942ba85c71c094bb}{}\label{application_layer_8h_ab3a620b0bd8e67f0942ba85c71c094bb} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT@{C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT}}
+\index{C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT@{C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT}{CONTROL\_START}}
+{\footnotesize\ttfamily \#define C\+O\+N\+T\+R\+O\+L\+\_\+\+S\+T\+A\+RT~0x02}
+
+\hypertarget{application_layer_8h_a5b5ca0ae07e92e9cad54568049f06fce}{}\label{application_layer_8h_a5b5ca0ae07e92e9cad54568049f06fce} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!Data\+Headers@{Data\+Headers}}
+\index{Data\+Headers@{Data\+Headers}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{Data\+Headers}{DataHeaders}}
+{\footnotesize\ttfamily \#define Data\+Headers~4}
+
+\hypertarget{application_layer_8h_ab117546549783a058d0321a287699579}{}\label{application_layer_8h_ab117546549783a058d0321a287699579} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!F\+I\+L\+E\+\_\+\+N\+A\+ME@{F\+I\+L\+E\+\_\+\+N\+A\+ME}}
+\index{F\+I\+L\+E\+\_\+\+N\+A\+ME@{F\+I\+L\+E\+\_\+\+N\+A\+ME}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{F\+I\+L\+E\+\_\+\+N\+A\+ME}{FILE\_NAME}}
+{\footnotesize\ttfamily \#define F\+I\+L\+E\+\_\+\+N\+A\+ME~0x01}
+
+\hypertarget{application_layer_8h_af3c3df6c9906ede8f09fa2af74cb28d5}{}\label{application_layer_8h_af3c3df6c9906ede8f09fa2af74cb28d5} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!F\+I\+L\+E\+\_\+\+S\+I\+ZE@{F\+I\+L\+E\+\_\+\+S\+I\+ZE}}
+\index{F\+I\+L\+E\+\_\+\+S\+I\+ZE@{F\+I\+L\+E\+\_\+\+S\+I\+ZE}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{F\+I\+L\+E\+\_\+\+S\+I\+ZE}{FILE\_SIZE}}
+{\footnotesize\ttfamily \#define F\+I\+L\+E\+\_\+\+S\+I\+ZE~0x00}
+
+\hypertarget{application_layer_8h_ab983f03862f557a786ccc43b26522e16}{}\label{application_layer_8h_ab983f03862f557a786ccc43b26522e16} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!L2@{L2}}
+\index{L2@{L2}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{L2}{L2}}
+{\footnotesize\ttfamily \#define L2~0x00}
+
+\hypertarget{application_layer_8h_a455948b8bd5f5ce920899ae1013c4b4c}{}\label{application_layer_8h_a455948b8bd5f5ce920899ae1013c4b4c} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!R\+E\+C\+E\+I\+V\+ER@{R\+E\+C\+E\+I\+V\+ER}}
+\index{R\+E\+C\+E\+I\+V\+ER@{R\+E\+C\+E\+I\+V\+ER}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{R\+E\+C\+E\+I\+V\+ER}{RECEIVER}}
+{\footnotesize\ttfamily \#define R\+E\+C\+E\+I\+V\+ER~1}
+
+\hypertarget{application_layer_8h_a4dd2cc1f618201244956369378b75c9a}{}\label{application_layer_8h_a4dd2cc1f618201244956369378b75c9a} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!T\+R\+A\+N\+S\+M\+I\+T\+T\+ER@{T\+R\+A\+N\+S\+M\+I\+T\+T\+ER}}
+\index{T\+R\+A\+N\+S\+M\+I\+T\+T\+ER@{T\+R\+A\+N\+S\+M\+I\+T\+T\+ER}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{T\+R\+A\+N\+S\+M\+I\+T\+T\+ER}{TRANSMITTER}}
+{\footnotesize\ttfamily \#define T\+R\+A\+N\+S\+M\+I\+T\+T\+ER~0}
+
+
+
+\subsection{Typedef Documentation}
+\hypertarget{application_layer_8h_acaaa4243674fb079f4d233d17759f36b}{}\label{application_layer_8h_acaaa4243674fb079f4d233d17759f36b} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!Application\+Layer@{Application\+Layer}}
+\index{Application\+Layer@{Application\+Layer}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{Application\+Layer}{ApplicationLayer}}
+{\footnotesize\ttfamily typedef struct \hyperlink{struct_application_layer}{Application\+Layer} \hyperlink{struct_application_layer}{Application\+Layer}}
+
+
+
+\subsection{Function Documentation}
+\hypertarget{application_layer_8h_abdd55a6320cd4fbce91a0583d4ad05f5}{}\label{application_layer_8h_abdd55a6320cd4fbce91a0583d4ad05f5} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!Init\+Application@{Init\+Application}}
+\index{Init\+Application@{Init\+Application}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{Init\+Application()}{InitApplication()}}
+{\footnotesize\ttfamily int Init\+Application (\begin{DoxyParamCaption}\item[{int}]{port,  }\item[{int}]{status,  }\item[{char $\ast$}]{name,  }\item[{int}]{baud\+Rate,  }\item[{int}]{package\+Size,  }\item[{int}]{retries,  }\item[{int}]{timeout }\end{DoxyParamCaption})}
+
+\mbox{[}Init\+Application description\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em port} & \mbox{[}description\mbox{]} \\
+\hline
+{\em status} & \mbox{[}description\mbox{]} \\
+\hline
+{\em name} & \mbox{[}description\mbox{]} \\
+\hline
+{\em baud\+Rate} & \mbox{[}description\mbox{]} \\
+\hline
+{\em package\+Size} & \mbox{[}description\mbox{]} \\
+\hline
+{\em retries} & \mbox{[}description\mbox{]} \\
+\hline
+{\em timeout} & \mbox{[}description\mbox{]} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_abdd55a6320cd4fbce91a0583d4ad05f5_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=330pt]{application_layer_8h_abdd55a6320cd4fbce91a0583d4ad05f5_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a631126e029a493e74a1af5aacf2a7c16}{}\label{application_layer_8h_a631126e029a493e74a1af5aacf2a7c16} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!receive\+Control@{receive\+Control}}
+\index{receive\+Control@{receive\+Control}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{receive\+Control()}{receiveControl()}}
+{\footnotesize\ttfamily int receive\+Control (\begin{DoxyParamCaption}\item[{int}]{type }\end{DoxyParamCaption})}
+
+\mbox{[}receive\+Control description\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em type} & \mbox{[}description\mbox{]} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a631126e029a493e74a1af5aacf2a7c16_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a631126e029a493e74a1af5aacf2a7c16_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a2809c0419ac7f54685983fd6d3477034}{}\label{application_layer_8h_a2809c0419ac7f54685983fd6d3477034} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!receive\+Data@{receive\+Data}}
+\index{receive\+Data@{receive\+Data}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{receive\+Data()}{receiveData()}}
+{\footnotesize\ttfamily int receive\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{[}receive\+Data description\mbox{]} \begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a2809c0419ac7f54685983fd6d3477034_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a2809c0419ac7f54685983fd6d3477034_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a931c3be900b6917c46372f158c19022b}{}\label{application_layer_8h_a931c3be900b6917c46372f158c19022b} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!receive\+Information@{receive\+Information}}
+\index{receive\+Information@{receive\+Information}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{receive\+Information()}{receiveInformation()}}
+{\footnotesize\ttfamily int receive\+Information (\begin{DoxyParamCaption}\item[{unsigned char $\ast$}]{buffer,  }\item[{int $\ast$}]{length }\end{DoxyParamCaption})}
+
+\mbox{[}receive\+Information description\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em buffer} & \mbox{[}description\mbox{]} \\
+\hline
+{\em length} & \mbox{[}description\mbox{]} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a931c3be900b6917c46372f158c19022b_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a931c3be900b6917c46372f158c19022b_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a73ecb47d14db1fb6e2554940364ff040}{}\label{application_layer_8h_a73ecb47d14db1fb6e2554940364ff040} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!send\+Control@{send\+Control}}
+\index{send\+Control@{send\+Control}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{send\+Control()}{sendControl()}}
+{\footnotesize\ttfamily int send\+Control (\begin{DoxyParamCaption}\item[{int}]{type }\end{DoxyParamCaption})}
+
+\mbox{[}send\+Control description\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em type} & \mbox{[}description\mbox{]} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a73ecb47d14db1fb6e2554940364ff040_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a73ecb47d14db1fb6e2554940364ff040_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a558000e1f87b3b852f73e20ba0a6b0f4}{}\label{application_layer_8h_a558000e1f87b3b852f73e20ba0a6b0f4} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!send\+Data@{send\+Data}}
+\index{send\+Data@{send\+Data}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{send\+Data()}{sendData()}}
+{\footnotesize\ttfamily int send\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{[}send\+Data description\mbox{]} \begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a558000e1f87b3b852f73e20ba0a6b0f4_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a558000e1f87b3b852f73e20ba0a6b0f4_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a7a2e353b862e29a450830649a7f113c9}{}\label{application_layer_8h_a7a2e353b862e29a450830649a7f113c9} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!send\+Information@{send\+Information}}
+\index{send\+Information@{send\+Information}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{send\+Information()}{sendInformation()}}
+{\footnotesize\ttfamily int send\+Information (\begin{DoxyParamCaption}\item[{unsigned char $\ast$}]{buffer,  }\item[{int}]{length }\end{DoxyParamCaption})}
+
+\mbox{[}send\+Information description\mbox{]} 
+\begin{DoxyParams}{Parameters}
+{\em buffer} & \mbox{[}description\mbox{]} \\
+\hline
+{\em length} & \mbox{[}description\mbox{]} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a7a2e353b862e29a450830649a7f113c9_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a7a2e353b862e29a450830649a7f113c9_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a0ac5863989f90535cb0fecae68437202}{}\label{application_layer_8h_a0ac5863989f90535cb0fecae68437202} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!show\+Receiver\+Statistics@{show\+Receiver\+Statistics}}
+\index{show\+Receiver\+Statistics@{show\+Receiver\+Statistics}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{show\+Receiver\+Statistics()}{showReceiverStatistics()}}
+{\footnotesize\ttfamily int show\+Receiver\+Statistics (\begin{DoxyParamCaption}\item[{int}]{num\+R\+E\+Jtransmissions,  }\item[{int}]{num\+Total\+I\+Transmissions }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a0ac5863989f90535cb0fecae68437202_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_ab2509db0c3dc8c88c9a678df0120bc21}{}\label{application_layer_8h_ab2509db0c3dc8c88c9a678df0120bc21} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!show\+Transmitter\+Statistics@{show\+Transmitter\+Statistics}}
+\index{show\+Transmitter\+Statistics@{show\+Transmitter\+Statistics}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{show\+Transmitter\+Statistics()}{showTransmitterStatistics()}}
+{\footnotesize\ttfamily int show\+Transmitter\+Statistics (\begin{DoxyParamCaption}\item[{int}]{num\+R\+E\+Jreceived,  }\item[{int}]{num\+Frame\+Itransmitted,  }\item[{int}]{num\+Time\+Outs }\end{DoxyParamCaption})}
+
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_ab2509db0c3dc8c88c9a678df0120bc21_icgraph}
+\end{center}
+\end{figure}
+\hypertarget{application_layer_8h_a3622090a7ff391221a74cad6493bbca9}{}\label{application_layer_8h_a3622090a7ff391221a74cad6493bbca9} 
+\index{application\+Layer.\+h@{application\+Layer.\+h}!start\+Connection@{start\+Connection}}
+\index{start\+Connection@{start\+Connection}!application\+Layer.\+h@{application\+Layer.\+h}}
+\subsubsection{\texorpdfstring{start\+Connection()}{startConnection()}}
+{\footnotesize\ttfamily int start\+Connection (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+\mbox{[}start\+Connection description\mbox{]} \begin{DoxyReturn}{Returns}
+\mbox{[}description\mbox{]} 
+\end{DoxyReturn}
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a3622090a7ff391221a74cad6493bbca9_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{application_layer_8h_a3622090a7ff391221a74cad6493bbca9_icgraph}
+\end{center}
+\end{figure}
