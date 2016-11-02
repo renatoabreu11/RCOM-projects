@@ -49,13 +49,8 @@ int initLinkLayer(int port, int status, int baudrate, int retries, int timeout) 
 	/* set input mode (non-canonical, no echo,...) */
 	linkLayer->newtio.c_lflag = 0;
 
-	if(linkLayer->status == 0) {
-		linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-		linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
-	} else {
-		linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-		linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
-	}
+	linkLayer->newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+	linkLayer->newtio.c_cc[VMIN]     = 0;   /* blocking read until 1 char received */
 
 	/*
 	VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
@@ -193,7 +188,7 @@ int checkForFrameErrors(int fd, unsigned char *buffer, unsigned char *package, i
 			updateNs();
 
 		sendSupervision(fd, linkLayer->controlREJ);
-		printf("*********************************************************************\nError during Control\n");
+		//printf("*********************************************************************\nError during Control\n");
 		return -1;
 	}
 
@@ -243,7 +238,7 @@ int llread(int fd, unsigned char *package, int numFrame){
 
 		memcpy(package, &buffer[4], dataSize);
 
-		printf("Esta e a frame %d\n", numFrame);
+		//printf("Esta e a frame %d\n", numFrame);
 		if(checkForFrameErrors(fd, buffer, package, length, dataSize) == -1) {
 			free(buffer);
 			continue;
@@ -260,6 +255,94 @@ int llread(int fd, unsigned char *package, int numFrame){
 	return length - 6;
 }
 
+<<<<<<< HEAD
+=======
+int llclose(int fd){
+	if ( tcsetattr(fd,TCSANOW,&linkLayer->oldtio) == -1) {
+		perror("tcsetattr");
+		exit(-1);
+	}
+	close(fd);
+
+	//printf("Rej transmissions %d\n", linkLayer->numREJ);
+
+	return 1;
+}
+
+int estabilishConnection(int fd){
+	STOP = FALSE;
+	timer = 1;
+	if(linkLayer->status == 0){
+		printf("%s\n", "Connecting Transmitter");
+		int nTry = 1;
+		int messageReceived = 0;
+		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+			sendSupervision(fd, C_SET);
+			if(waitForResponse(fd, UA) == -1){
+				nTry++;
+			} else messageReceived = 1;
+		}
+		if(!messageReceived){
+			printf("%s\n", "Error estabilishing connection!");
+			return -1;
+		}
+	} else if(linkLayer->status == 1){
+		printf("%s\n", "Connecting Receiver");
+		waitForResponse(fd, SET);
+		sendSupervision(fd, C_UA);
+	}
+	return 1;
+}
+
+int endConnection(int fd){
+	STOP = FALSE;
+	timer = 1;
+	if(linkLayer->status == 0){
+		printf("%s\n", "Disconnecting Transmitter");
+		int nTry = 1;
+		int messageReceived = 0;
+		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+			sendSupervision(fd, C_DISC);
+			if(waitForResponse(fd, DISC) == -1){
+				nTry++;
+			} else messageReceived = 1;
+		}
+		if(!messageReceived){
+			printf("%s\n", "Error terminating connection!");
+			return -1;
+		}
+		sendSupervision(fd, C_UA);
+		sleep(1);
+	} else if(linkLayer->status == 1){
+		printf("%s\n", "Disconnecting Receiver");
+		int messageReceived = 0;
+		while(!messageReceived){
+			if(waitForResponse(fd, DISC) == -1)
+				continue;
+			else messageReceived = 1;
+		}
+		if(!messageReceived){
+			printf("%s\n", "Error terminating connection!");
+			return -1;
+		}
+		int nTry = 1;
+		messageReceived = 0;
+		while(nTry <= linkLayer->numTransmissions && !messageReceived){
+			sendSupervision(fd, C_DISC);
+			if(waitForResponse(fd, UA) == -1){
+				nTry++;
+			} else messageReceived = 1;
+		}
+		if(!messageReceived){
+			printf("%s\n", "Error terminating connection!");
+			return -1;
+		}
+	}
+
+	return 1;
+}
+
+>>>>>>> c34c8389959941ff7ddc4f1514b82999c9fbe1c5
 int sendSupervision(int fd, unsigned char control){
 	unsigned char frame[5];
 
@@ -272,7 +355,7 @@ int sendSupervision(int fd, unsigned char control){
 	int numBytesSent = write(fd, frame, 5);
 
 	if(numBytesSent != 5) {
-		printf("Error sending Control!\n");
+		printf("Error sending frame!\n");
 		return -1;
 	}
 	return 0;
@@ -338,7 +421,6 @@ int waitForResponse(int fd, unsigned char flagType) {
 			}
 		}
 		res = read(fd,buf,1);     /* returns after 1 char have been input */
-
 
 		if(res == 0)
 			continue;
@@ -465,7 +547,6 @@ int byteDestuffing(unsigned char** frame, int length){
 		}
 	}
 
-	//printf("Length antiga = %d, newLength = %d, patterns = %d\n", length, newLength, patterns);
 	*frame = realloc(*frame, newLength);
 
 	return newLength;
@@ -595,6 +676,7 @@ int getBaud(int baudrate){
 	}
 	return B115200;
 }
+
 int getNumREJ() {
 	return linkLayer->numREJ;
 }
