@@ -24,7 +24,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
 
     struct stat fileStat;
     if (stat(app->fileName, &fileStat) == 0)
-    app->fileSize = fileStat.st_size;
+      app->fileSize = fileStat.st_size;
     else{
       printf("%s\n", "Error getting file size");
       return -1;
@@ -213,8 +213,9 @@ int receiveData(){
       case -1:
         printf("Error receiving data packet.\n");
         continue;
-        break;          //NECESSARY??????????????????????????????????????????????
+        break;
       case -2:
+        //repeated frame, discarding obtained information
         fseek(file, -length, SEEK_CUR);
 
         fwrite(buffer, 1, length, file);
@@ -236,7 +237,7 @@ int receiveData(){
     printf("Bytes read: %d\n", bytesRead);
   }
 
-  printf("\n*********************\nForam recebidos %d frames, com %d retransmissoes!\n****************", frameCounter, myRetransmissoes);
+  //printf("\n*********************\nForam recebidos %d frames, com %d retransmissoes!\n****************", frameCounter, myRetransmissoes);
 
   if(receiveControl(CONTROL_END) == -1){
     printf("%s\n", "Error receiving END control packet");
@@ -299,7 +300,7 @@ int receiveInformation(unsigned char *buffer, int *length){
   if((packageSize = llread(app->fileDescriptor, package,frameCounter)) == -1)
     return -1;
 
-    int C = package[0];
+  int C = package[0];
 
   if(C != CONTROL_DATA){
     printf("%s\n", "wrong C flag\n");
@@ -325,7 +326,7 @@ int receiveInformation(unsigned char *buffer, int *length){
   free(package);
 
   if(N != frameCounter){
-     printf("%s\n", "neh");
+     //printf("%s\n", "neh");
      return -2;
    }
 

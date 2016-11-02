@@ -207,7 +207,7 @@ void updateNs();
 
 /**
 */
-int getBaud(int baudrate);\
+int getBaud(int baudrate);
 
 int getNumREJ();
 
