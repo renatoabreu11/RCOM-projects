@@ -72,6 +72,7 @@ int initLinkLayer(int port, int status, int baudrate, int retries, int timeout) 
 }
 
 int llopen(int fd){
+	srand(time(NULL));
 	STOP = FALSE;
 	timer = 1;
 	if(linkLayer->status == 0){
@@ -234,7 +235,11 @@ int llread(int fd, unsigned char *package, int numFrame){
 		printf("Frame length after destuff: %d\n",length);
 
 		dataSize = length - 6;
-		//printf("Data size = %d\n", dataSize);
+
+		if(rand() % 100 == 0){
+			int byteIndex = (rand() % dataSize) + 4;
+			buffer[byteIndex] = ERROR;
+		}
 
 		memcpy(package, &buffer[4], dataSize);
 
@@ -255,94 +260,6 @@ int llread(int fd, unsigned char *package, int numFrame){
 	return length - 6;
 }
 
-<<<<<<< HEAD
-=======
-int llclose(int fd){
-	if ( tcsetattr(fd,TCSANOW,&linkLayer->oldtio) == -1) {
-		perror("tcsetattr");
-		exit(-1);
-	}
-	close(fd);
-
-	//printf("Rej transmissions %d\n", linkLayer->numREJ);
-
-	return 1;
-}
-
-int estabilishConnection(int fd){
-	STOP = FALSE;
-	timer = 1;
-	if(linkLayer->status == 0){
-		printf("%s\n", "Connecting Transmitter");
-		int nTry = 1;
-		int messageReceived = 0;
-		while(nTry <= linkLayer->numTransmissions && !messageReceived){
-			sendSupervision(fd, C_SET);
-			if(waitForResponse(fd, UA) == -1){
-				nTry++;
-			} else messageReceived = 1;
-		}
-		if(!messageReceived){
-			printf("%s\n", "Error estabilishing connection!");
-			return -1;
-		}
-	} else if(linkLayer->status == 1){
-		printf("%s\n", "Connecting Receiver");
-		waitForResponse(fd, SET);
-		sendSupervision(fd, C_UA);
-	}
-	return 1;
-}
-
-int endConnection(int fd){
-	STOP = FALSE;
-	timer = 1;
-	if(linkLayer->status == 0){
-		printf("%s\n", "Disconnecting Transmitter");
-		int nTry = 1;
-		int messageReceived = 0;
-		while(nTry <= linkLayer->numTransmissions && !messageReceived){
-			sendSupervision(fd, C_DISC);
-			if(waitForResponse(fd, DISC) == -1){
-				nTry++;
-			} else messageReceived = 1;
-		}
-		if(!messageReceived){
-			printf("%s\n", "Error terminating connection!");
-			return -1;
-		}
-		sendSupervision(fd, C_UA);
-		sleep(1);
-	} else if(linkLayer->status == 1){
-		printf("%s\n", "Disconnecting Receiver");
-		int messageReceived = 0;
-		while(!messageReceived){
-			if(waitForResponse(fd, DISC) == -1)
-				continue;
-			else messageReceived = 1;
-		}
-		if(!messageReceived){
-			printf("%s\n", "Error terminating connection!");
-			return -1;
-		}
-		int nTry = 1;
-		messageReceived = 0;
-		while(nTry <= linkLayer->numTransmissions && !messageReceived){
-			sendSupervision(fd, C_DISC);
-			if(waitForResponse(fd, UA) == -1){
-				nTry++;
-			} else messageReceived = 1;
-		}
-		if(!messageReceived){
-			printf("%s\n", "Error terminating connection!");
-			return -1;
-		}
-	}
-
-	return 1;
-}
-
->>>>>>> c34c8389959941ff7ddc4f1514b82999c9fbe1c5
 int sendSupervision(int fd, unsigned char control){
 	unsigned char frame[5];
 

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <time.h>
 
 #define MAX_FRAME_LENGTH 1024
 #define FALSE 0
@@ -23,6 +24,7 @@
 #define C_RR 0x85
 #define C_DISC 0x0b
 #define C_REJ 0x81
+#define ERROR 0xd5
 
 #define UA 0
 #define RR 1
