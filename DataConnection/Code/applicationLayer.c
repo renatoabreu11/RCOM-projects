@@ -195,7 +195,7 @@ int receiveData(){
   if(receiveControl(CONTROL_START) == -1){
     printf("%s\n", "Error receiving control package");
     return -1;
-  }else frameReceived++;
+  }
 
   FILE *file = fopen(app->fileName, "wb");
   if (file == NULL) {
@@ -246,7 +246,7 @@ int receiveData(){
   if(receiveControl(CONTROL_END) == -1){
     printf("%s\n", "Error receiving END control packet");
     return -1;
-  }else frameReceived++;
+  }
 
   fclose(file);
   return 1;
