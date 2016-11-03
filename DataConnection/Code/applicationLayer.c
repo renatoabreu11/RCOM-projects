@@ -2,6 +2,7 @@
 
 ApplicationLayer *app;
 int frameCounter = 1;
+int frameReceived = 0;
 
 int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout){
   app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
@@ -225,6 +226,7 @@ int receiveData(){
         myRetransmissoes++;
         break;
       default:
+        frameReceived++;
         frameCounter++;
         if(frameCounter == 256)
           frameCounter = 1;
@@ -347,7 +349,7 @@ int showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions) 
 
   printf("Number of 'I' frames received withough errors: %d\n", frameCounter);
   //Since frameCounter starts at 1, we need to take that value out
-  printf("Number of 'I' frames received with errors and ignored: %d\n", (numTotalITransmissions - frameCounter - 1));
+  printf("Number of 'I' frames received with errors and ignored: %d\n", (numTotalITransmissions - frameReceived));
 	printf("Number of 'REJ' frames sent: %d\n", numREJtransmissions);
 
   printf("\n\n");
