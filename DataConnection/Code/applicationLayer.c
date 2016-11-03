@@ -255,6 +255,8 @@ int receiveData(){
 int receiveControl(int control){
   unsigned char *package = malloc(app->dataLength);
   int packageSize;
+
+  frameReceived++;
   if((packageSize = llread(app->fileDescriptor, package, frameCounter)) == -1)
     return -1;
   int j = 0;
