@@ -39,7 +39,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
   while(numTries < 3){
     if(startConnection() == -1){
       llclose(app->fileDescriptor);
-      numTries++;  
+      numTries++;
     }else break;
     if(llopen(app->fileDescriptor) == -1){
       llclose(app->fileDescriptor);
@@ -195,7 +195,7 @@ int receiveData(){
   if(receiveControl(CONTROL_START) == -1){
     printf("%s\n", "Error receiving control package");
     return -1;
-  }
+  }else frameReceived++;
 
   FILE *file = fopen(app->fileName, "wb");
   if (file == NULL) {
@@ -246,7 +246,7 @@ int receiveData(){
   if(receiveControl(CONTROL_END) == -1){
     printf("%s\n", "Error receiving END control packet");
     return -1;
-  }
+  }else frameReceived++;
 
   fclose(file);
   return 1;
@@ -277,11 +277,14 @@ int receiveControl(int control){
   for(; i < nParams; i++){
     int type = package[index++];
     length = (char)package[index++] - '0';
+    printf("Length %d\n", length);
     switch(type) {
       case FILE_SIZE:{
-       char *fileLength = (char *)malloc(length);
+       char *fileLength = (char *)malloc(length + 1);
        memcpy(fileLength, &package[index], length);
+       fileLength[length] = '\0';
        sscanf(fileLength, "%u", &(app->fileSize));
+       printf("Size: %s\n", fileLength);
        free(fileLength);
        index += length;
        break;
@@ -295,6 +298,7 @@ int receiveControl(int control){
      default: break;
    }
  }
+
   return 1;
 }
 
@@ -347,7 +351,7 @@ int showReceiverStatistics(int numREJtransmissions, int numTotalITransmissions) 
   printf("#################### \n");
   printf("\n\n");
 
-  printf("Number of 'I' frames received withough errors: %d\n", frameCounter);
+  printf("Number of 'I' frames received withough errors: %d\n", frameReceived);
   //Since frameCounter starts at 1, we need to take that value out
   printf("Number of 'I' frames received with errors and ignored: %d\n", (numTotalITransmissions - frameReceived));
 	printf("Number of 'REJ' frames sent: %d\n", numREJtransmissions);
