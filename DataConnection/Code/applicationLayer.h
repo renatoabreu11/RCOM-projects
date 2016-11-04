@@ -43,7 +43,7 @@ typedef struct ApplicationLayer{
  * @param  timeout     [description]
  * @return             [description]
  */
-int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout);
+int InitApplication(int fileDescriptor, int status, char * name, int packageSize);
 
 /**
  * [startConnection description]

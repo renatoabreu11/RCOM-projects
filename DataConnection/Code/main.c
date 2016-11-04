@@ -12,10 +12,6 @@
 
 #include "applicationLayer.h"
 
-#define CI 0x00
-#define CRR 0x85
-#define CREJ 0x81
-
 int baudRate = 57600;
 int packageLength = 255;
 int retries = 3;
@@ -23,11 +19,10 @@ int timeOut = 2;
 
 void clear_stream(FILE *in){
 	int ch;
-
 	clearerr(in);
 
 	do
-	ch = getc(in);
+		ch = getc(in);
 	while (ch != '\n' && ch != EOF);
 
 	clearerr(in);
@@ -73,7 +68,14 @@ void showMenu(int port, int status){
  		switch(option){
   		case'1':
   			printf("\n\n");
-  			InitApplication(port, status, "../pinguim.gif", baudRate, packageLength, retries, timeOut);
+			int descriptor;
+			int ret = initLinkLayer(port, status, baudRate, retries, timeOut);
+  			if(ret == -1){
+    			return;
+  			} else{
+    			descriptor = ret;
+  			}
+  			InitApplication(descriptor, status, "../pinguim.gif", packageLength);
   			break;
   		case'2':
   			baudRate = chooseParameter("Baud rate");

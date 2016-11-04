@@ -1,0 +1,7 @@
+<map id="receiveControl" name="receiveControl">
+<area shape="rect" id="node2" href="$application_layer_8h.html#a2809c0419ac7f54685983fd6d3477034" title="receiveData" alt="" coords="156,5,245,32"/>
+<area shape="rect" id="node3" href="$application_layer_8h.html#a3622090a7ff391221a74cad6493bbca9" title="startConnection" alt="" coords="293,5,407,32"/>
+<area shape="rect" id="node4" href="$application_layer_8h.html#aa4a6846a3620f12c807f2dbd9f272298" title="InitApplication" alt="" coords="455,5,557,32"/>
+<area shape="rect" id="node5" href="$main_8c.html#ab294aebe6dd8338683fb8aff32eb965c" title="showMenu" alt="" coords="605,5,689,32"/>
+<area shape="rect" id="node6" href="$main_8c.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="737,5,788,32"/>
+</map>

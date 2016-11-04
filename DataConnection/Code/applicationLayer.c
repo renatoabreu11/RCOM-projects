@@ -4,17 +4,12 @@ ApplicationLayer *app;
 int frameCounter = 1;
 int frameReceived = 0;
 
-int InitApplication(int port, int status, char * name, int baudRate, int packageSize, int retries, int timeout){
+int InitApplication(int fileDescriptor, int status, char * name, int packageSize){
   app = (ApplicationLayer *) malloc(sizeof(ApplicationLayer));
   if (app == NULL)
-  return -1;
-
-  int ret = initLinkLayer(port, status, baudRate, retries, timeout);
-  if(ret == -1){
     return -1;
-  } else{
-    app->fileDescriptor = ret;
-  }
+
+  app->fileDescriptor = fileDescriptor;
   app->status = status;
   app->dataLength = packageSize;
 
@@ -47,7 +42,7 @@ int InitApplication(int port, int status, char * name, int baudRate, int package
     }
   }
 
-  ret = llclose(app->fileDescriptor);
+  int ret = llclose(app->fileDescriptor);
   if(ret == -1)
     return -1;
 
@@ -197,7 +192,7 @@ int receiveData(){
     return -1;
   }
 
-  FILE *file = fopen(app->fileName, "wb");
+  FILE *file = fopen("pinguim.gif", "wb");
   if (file == NULL) {
     printf("Error creating file.\n");
     return 0;
