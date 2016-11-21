@@ -1,3 +1,4 @@
+#!/bin/bash
 /etc/init.d/networking restart
 ifconfig eth0 up
 ifconfig
