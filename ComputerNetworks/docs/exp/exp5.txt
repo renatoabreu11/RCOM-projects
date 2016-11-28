@@ -1,0 +1,9 @@
+1)
+/*fazer no tux1, 2, e 4*/
+vi /etc/resolv.conf
+
+/*se houver nameservers, esta a funcionar*/
+
+3)
+ping google.com
+/*pode ser www.google.com*/
