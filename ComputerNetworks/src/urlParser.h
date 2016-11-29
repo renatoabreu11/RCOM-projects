@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 /*
  * URL storage
@@ -10,7 +11,7 @@ struct parsed_url {
     const char *url;                   
     char *scheme;               /* Url Scheme -> https, ftp, mailto, etc. It is mandatory */
     char *host;                 /* mandatory */
-    char *port;                 /* optional */
+    int port;                 /* optional */
     char *path;                 /* optional */
     char *username;             /* optional */
     char *password;             /* optional */

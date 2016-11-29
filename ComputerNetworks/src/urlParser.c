@@ -31,7 +31,7 @@ struct parsed_url * parse_url(const char *url)
     purl->url = url;
     purl->scheme = NULL;
     purl->host = NULL;
-    purl->port = NULL;
+    purl->port = 0;
     purl->path = NULL;
     purl->username = NULL;
     purl->password = NULL;
@@ -187,13 +187,14 @@ struct parsed_url * parse_url(const char *url)
             tmpstr++;
         }
         len = tmpstr - curstr;
-        purl->port = malloc(sizeof(char) * (len + 1));
-        if ( NULL == purl->port ) {
+        char * port = malloc(sizeof(char) * (len + 1));
+        if ( NULL == port ) {
             freeUrlStruct(purl);
             return NULL;
         }
-        (void)strncpy(purl->port, curstr, len);
-        purl->port[len] = '\0';
+        (void)strncpy(port, curstr, len);
+        port[len] = '\0';
+        purl->port = atoi(port);
         curstr = tmpstr;
     }
 
@@ -235,8 +236,8 @@ void printParsedUrl(struct parsed_url *purl){
         if ( NULL != purl->host ) {
             printf("Host: %s\n", purl->host);
         }
-        if ( NULL != purl->port ) {
-            printf("Port: %s\n", purl->port);
+        if ( 0 != purl->port ) {
+            printf("Port: %d\n", purl->port);
         }
         if ( NULL != purl->path ) {
             printf("Path: %s\n", purl->path);
@@ -261,9 +262,6 @@ void freeUrlStruct(struct parsed_url *purl)
         }
         if ( NULL != purl->host ) {
             free(purl->host);
-        }
-        if ( NULL != purl->port ) {
-            free(purl->port);
         }
         if ( NULL != purl->path ) {
             free(purl->path);

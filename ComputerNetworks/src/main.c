@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-	struct parsed_url * parsedUrl = parse_url("http://65.173.211.241");
+	struct parsed_url * parsedUrl = parse_url("ftp://username:password@server.com:8000/public_html/test/");
     printParsedUrl(parsedUrl);
     freeUrlStruct(parsedUrl);
 }
