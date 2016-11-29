@@ -9,7 +9,7 @@ project: main.o ftp.o urlParser.o
 main.o:  main.c
 	$(CC) $(CFLAGS) -c main.c
 
-ftp.o: ftp.c
+ftp.o: ftp.h ftp.c
 	$(CC) $(CFLAGS) -c ftp.c	
 
 linkLayer.o: urlParser.h urlParser.c

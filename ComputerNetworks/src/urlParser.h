@@ -3,6 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <errno.h> 
+#include <netdb.h> 
+#include <sys/types.h>
+#include <netinet/in.h> 
+
+#include <arpa/inet.h>
 
 /*
  * URL storage
@@ -15,8 +21,10 @@ struct parsed_url {
     char *path;                 /* optional */
     char *username;             /* optional */
     char *password;             /* optional */
+    char *ip;
 };
 
 struct parsed_url * parse_url(const char *);
+int hostToIP(struct parsed_url *);
 void printParsedUrl(struct parsed_url *);
 void freeUrlStruct(struct parsed_url *);

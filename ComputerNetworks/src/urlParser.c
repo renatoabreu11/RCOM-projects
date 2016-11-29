@@ -35,6 +35,7 @@ struct parsed_url * parse_url(const char *url)
     purl->path = NULL;
     purl->username = NULL;
     purl->password = NULL;
+    purl->ip = NULL;
 
     curstr = url;
 
@@ -225,7 +226,24 @@ struct parsed_url * parse_url(const char *url)
     purl->path[len] = '\0';
     curstr = tmpstr;
 
+    if(hostToIP(purl) == -1){
+        freeUrlStruct(purl);
+        return NULL;
+    }
+
     return purl;
+}
+
+int hostToIP(struct parsed_url *purl){
+    	struct hostent *h;      
+
+        if ((h=gethostbyname(purl->host)) == NULL) {  
+            herror("gethostbyname");
+            return -1;
+        }
+
+        purl->ip = inet_ntoa(*((struct in_addr *)h->h_addr));
+        return 0;
 }
 
 void printParsedUrl(struct parsed_url *purl){
@@ -247,6 +265,9 @@ void printParsedUrl(struct parsed_url *purl){
         }
         if ( NULL != purl->password ) {
             printf("Password: %s\n", purl->password);
+        }
+        if ( NULL != purl->ip ) {
+            printf("IP: %s\n", purl->ip);
         }
     }    
 }
