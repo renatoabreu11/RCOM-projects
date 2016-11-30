@@ -32,6 +32,7 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 	if(connectSocket(ftp, ip, port) == -1)
 		return -1;
 
+	
 
 }
 
@@ -65,3 +66,14 @@ int ftpDownload(struct ftp_data *ftpData, const char *path){
 int ftpLogout(struct ftp_data *ftpData){
 	
 }
+
+int ftpSendMessage(struct ftp_data * ftpData, char *str){
+	int strLength = strlen(str);
+	
+	if(write(ftpData->controlSocketFd, str, strLength) != strLength){
+		printf("%s\n", "Error writing to ftp server");
+		return -1;
+	}
+
+	else return 1;
+}	
