@@ -67,6 +67,7 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 	
 	memset(response, 0, strlen(response));
 	sprintf(message, "PASS %s\r\n", password);
+	printf("%s", message);
 
 	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
@@ -130,7 +131,7 @@ int ftpRead(struct ftp_data *ftpData, char *str, size_t size, int expectedCode) 
 	char code[4];
 	int codeInt;
 	do{
-		memset(code, 0, 4);
+		memset(code, 0, sizeof code);
 		memset(str, 0, size);
 		str = fgets(str, size, file);
 		memcpy(code, str, 3);
@@ -141,7 +142,6 @@ int ftpRead(struct ftp_data *ftpData, char *str, size_t size, int expectedCode) 
 	if(expectedCode != 0 && codeInt != expectedCode){
 		return -1;
 	}
-
 	return 1;
 }
 
