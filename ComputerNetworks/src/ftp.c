@@ -81,7 +81,7 @@ int ftpLogout(struct ftp_data *ftpData){
 }
 
 int ftpRead(struct ftp_data *ftpData, char *str, size_t size) {
-	FILE *file = fopen(ftpData->controlSocketFd, "r");
+	FILE *file = fdopen(ftpData->controlSocketFd, "r");
 
 	if(fgets(str, size, file) == NULL)
 		return -1;

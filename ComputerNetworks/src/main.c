@@ -37,4 +37,6 @@ int main(int argc, char *argv[])
     }else printf("Successfull Authentication to server!\n");
 
     freeUrlStruct(parsedUrl);
+
+    return 1;
 }

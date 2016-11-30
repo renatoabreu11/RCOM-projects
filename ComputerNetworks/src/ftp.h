@@ -21,4 +21,5 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password);
 int ftpSetPassiveMode(struct ftp_data *ftpData);
 int ftpDownload(struct ftp_data *ftpData, const char *path);
 int ftpLogout(struct ftp_data *ftpData);
+int ftpRead(struct ftp_data *ftpData, char *str, size_t size);
 int ftpSendMessage(struct ftp_data * ftpData, char *str);
