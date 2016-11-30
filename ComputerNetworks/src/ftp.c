@@ -1,6 +1,7 @@
 #include "ftp.h"
 
 int connectSocket(struct ftp_data *ftp, const char *ip, int port){
+	int sockfd;
 	struct	sockaddr_in server_addr;
 	
 	/*server address handling*/
@@ -10,18 +11,18 @@ int connectSocket(struct ftp_data *ftp, const char *ip, int port){
 	server_addr.sin_port = htons(port);		/*server TCP port must be network byte ordered */
     
 	/*open an TCP socket*/
-	if ((ftp->controlSocketFd = socket(AF_INET,SOCK_STREAM,0)) < 0) {
+	if ((sockfd = socket(AF_INET,SOCK_STREAM,0)) < 0) {
     	perror("socket()");
         return -1;
     }
 
 	/*connect to the server*/
-    if(connect(ftp->controlSocketFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
+    if(connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
         perror("connect()");
 		return -1;
 	}
 
-    return 1;
+    return sockfd;
 }
 
 /*
@@ -33,7 +34,7 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 		return -1;
 
 	char response[1024];
-	if(ftpRead(ftp, response, sizeof(response), ServiceReady) == -1) {
+	if(ftpRead(ftp, response, sizeof(response), SERVICE_READY) == -1) {
 		printf("Error: %s!", response);
 		return -1;
 	}
@@ -57,7 +58,7 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 
 	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
-	if(ftpRead(ftp, response, strlen(response), ValidUser) == -1) {
+	if(ftpRead(ftp, response, strlen(response), VALID_USER) == -1) {
 		printf("Error: %s!", response);
 		return -1;
 	}
@@ -71,7 +72,7 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 
 	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
-	if(ftpRead(ftp, response, strlen(response), LoggedIn) == -1) {
+	if(ftpRead(ftp, response, strlen(response), LOGGED_IN) == -1) {
 		printf("Error: %s!", response);
 		return -1;
 	}
@@ -86,16 +87,32 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
  * Connect a second socket (a data socket) with the given configuration.
  */
 int ftpSetPassiveMode(struct ftp_data *ftp){
-	char message[1024] = "PASV\r\n";
-	char response[1024];
+	char ip[1024];
+	int port;
 
+	char message[1024] = "PASV\r\n";
 	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
-	if(ftpRead(ftp, response, strlen(response), 0) == -1) {
-		printf("Error: %s!", response);
+
+	memset(message, 0, sizeof(message));
+	if(ftpRead(ftp, message, sizeof(message), PASSIVE) == -1) {
+		printf("Error: couldn't read the server's response on PASV!");
+		return -1;	
+	}
+
+	//Parses the message received
+	int ipPart1, ipPart2, ipPart3, ipPart4, portPart1, portPart2;
+	sscanf(message, "%d %d %d %d %d %d", &ipPart1, &ipPart2, &ipPart3, &ipPart4, &portPart1, &portPart2);
+
+	//Builds IP
+	sprintf(ip, "%d.%d.%d.%d", ipPart1, ipPart2, ipPart3, ipPart4);
+	//Builds Port
+	port = portPart1 * 256 + portPart2;
+
+	if((ftp->dataSocketFd = connectSocket(ftp, ip, port)) == -1) {
+		printf("Error: couldn't connect to socket on PASV");
 		return -1;
 	}
-	printf("%s", response);
 
 	return 1;
 }
@@ -117,7 +134,7 @@ int ftpLogout(struct ftp_data *ftpData){
 	sprintf(message, "QUIT\r\n");
 	if(ftpSendMessage(ftpData, message) == -1)
 		return -1;
-	if(ftpRead(ftpData, response, sizeof(response), ConnectionClosed)) {
+	if(ftpRead(ftpData, response, sizeof(response), CONNECTION_CLOSED)) {
 		printf("Error: %s!", response);
 		return -1;
 	}

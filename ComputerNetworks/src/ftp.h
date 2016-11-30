@@ -10,10 +10,11 @@
 #include <strings.h>
 #include <string.h>
 
-#define ServiceReady 		220
-#define ValidUser 			331
-#define LoggedIn    		230
-#define ConnectionClosed	221 
+#define SERVICE_READY 		220
+#define VALID_USER 			331
+#define LOGGED_IN    		230
+#define CONNECTION_CLOSED	221
+#define PASSIVE				227
 
 struct ftp_data{
 	int controlSocketFd;
