@@ -32,7 +32,7 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 	if(connectSocket(ftp, ip, port) == -1)
 		return -1;
 
-	/*char str[1024];
+	char str[1024];
 	if(ftpRead(ftp, str, sizeof(str)) == -1) {
 		printf("Error: couldn't read the server's response!");
 		return -1;
@@ -45,7 +45,7 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 	if(strcmp(code, "220") != 0) {
 		printf("Error: wrong code received!");
 		return -1;
-	}*/
+	}
 
 	return 1;
 }
@@ -56,41 +56,47 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
  */
 int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 	char message[1024];
+	char response[1024];
+	char code[4];
 
-	/********** Send USER **********/
+	/********** Sends USER **********/
 
 	//'\r' is to simulate 'ENTER'
 	sprintf(message, "USER %s\r\n", username);
-	ftpSendMessage(ftp, message);
 
-	char response[1024];
+	if(ftpSendMessage(ftp, message) == -1)
+		return -1;
 	if(ftpRead(ftp, response, strlen(response)) == -1) {
 		printf("Error: couldn't read the server's response!");
 		return -1;
 	}
 
-	char code[4];
 	memcpy(code, response, 3);
 	code[3] = '\0';
 
-	printf("\nCode meu = %s", code);
-
-	if(strcmp(code, response) != 0) {
+	if(strcmp(code, "331") != 0) {
 		printf("Error: wrong code received!");
 		return -1;
 	}
 
-	/********** Send PASS **********/
+	/********** Sends PASS **********/
 	
+	memset(response, 0, strlen(response));
+	memset(code, 0, strlen(code));
 	sprintf(message, "pass %s\r\n", password);
-	ftpSendMessage(ftp, message);
 
+	if(ftpSendMessage(ftp, message) == -1)
+		return -1;
 	if(ftpRead(ftp, response, strlen(response)) == -1) {
 		printf("Error: couldn't read the server's response!");
 		return -1;	
 	}
 
-	memset(code, 0, strlen(code));
+	memcpy(code, response, 3);
+	if(strcmp(code, "230") != 0) {
+		printf("Error: wrong code received!");
+		return -1;
+	}
 
 	return 1;
 }
