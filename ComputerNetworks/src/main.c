@@ -22,9 +22,11 @@ int main(int argc, char *argv[])
     }
 
     if(parsedUrl->password == NULL){
+        char input[50]; 
         printf("Anonymous Mode. Enter your password (fe.up.pt personal mail):\n");
-        parsedUrl->password = malloc(100);
-        fgets(parsedUrl->password, 100, stdin);
+        fgets(input, 50, stdin);
+        parsedUrl->password = malloc(strlen(input));
+        strncat(parsedUrl->password, input, strlen(input) - 1);
     }
     printParsedUrl(parsedUrl);
 
