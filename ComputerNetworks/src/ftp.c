@@ -39,14 +39,14 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 	}
 
 	char code[4];
-	memcpy(code, str[0], 3);
+	memcpy(code, str, 3);
 
 	if(strcmp(code, "220") != 0) {
 		printf("Error: wrong code received!");
 		return -1;
 	}
 
-	return 1,
+	return 1;
 }
 
 /*
@@ -54,7 +54,7 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
  * Send password using the command PASS and wait for confirmation (230). 
  */
 int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
-
+	return 1;
 }
 
 /* 
@@ -63,21 +63,21 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
  * Connect a second socket (a data socket) with the given configuration.
  */
 int ftpSetPassiveMode(struct ftp_data *ftpData){
-
+	return 1;
 }
 
 /*
  * Send the RETR command with the file path
  */
 int ftpDownload(struct ftp_data *ftpData, const char *path){
-
+	return 1;
 }
 
 /*
  * Send the QUIT command and wait for reply
  */ 
 int ftpLogout(struct ftp_data *ftpData){
-	
+	return 1;
 }
 
 int ftpRead(struct ftp_data *ftpData, char *str, size_t size) {
@@ -97,5 +97,7 @@ int ftpSendMessage(struct ftp_data * ftpData, char *str){
 	if(write(ftpData->controlSocketFd, str, strLength) != strLength){
 		printf("%s\n", "Error writing to ftp server");
 		return -1;
-	} else return 1;
+	}
+
+	return 1;
 }
