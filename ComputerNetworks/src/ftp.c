@@ -32,7 +32,21 @@ int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 	if(connectSocket(ftp, ip, port) == -1)
 		return -1;
 
+	char str[1024];
+	if(ftpRead(ftp, str, sizeof(str)) == -1) {
+		printf("Couldn't connect'");
+		return -1;
+	}
 
+	char code[4];
+	memcpy(code, str[0], 3);
+
+	if(strcmp(code, "220") != 0) {
+		printf("Error: wrong code received!");
+		return -1;
+	}
+
+	return 1,
 }
 
 /*
@@ -64,4 +78,15 @@ int ftpDownload(struct ftp_data *ftpData, const char *path){
  */ 
 int ftpLogout(struct ftp_data *ftpData){
 	
+}
+
+int ftpRead(struct ftp_data *ftpData, char *str, size_t size) {
+	FILE *file = fopen(ftpData->controlSocketFd, "r");
+
+	if(fgets(str, size, file) == NULL)
+		return -1;
+
+	printf("Str: %s\n", str);
+
+	return 1;
 }
