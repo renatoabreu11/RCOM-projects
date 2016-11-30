@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <netdb.h>
 #include <strings.h>
+#include <string.h>
 
 struct ftp_data{
 	int controlSocketFd;
@@ -20,4 +21,4 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password);
 int ftpSetPassiveMode(struct ftp_data *ftpData);
 int ftpDownload(struct ftp_data *ftpData, const char *path);
 int ftpLogout(struct ftp_data *ftpData);
-int ftpSendMessage(struct ftp_data * ftpData, char *str, int bytes);
+int ftpSendMessage(struct ftp_data * ftpData, char *str);
