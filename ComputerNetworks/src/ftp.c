@@ -93,6 +93,7 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 	}
 
 	memcpy(code, response, 3);
+	code[3] = '\0';
 	if(strcmp(code, "230") != 0) {
 		printf("Error: wrong code received!");
 		return -1;
@@ -118,31 +119,37 @@ int ftpDownload(struct ftp_data *ftpData, const char *path){
 }
 
 /*
- * Send the QUIT command and wait for reply
+ * Send the QUIT command and wait for reply (221)
  */ 
 int ftpLogout(struct ftp_data *ftpData){
+	char message[1024];
+	char response[1024];
+	char code[4];
+
+	sprintf(message, "QUIT\r\n");
+	if(ftpSendMessage(ftpData, message) == -1)
+		return -1;
+	if(ftpRead(ftpData, response, sizeof(response))) {
+		printf("Error: couldn't read the server's response!");
+		return -1;
+	}
+
+	memcpy(code, response, 3);
+	code[3] = '\0';
+
+	if(strcmp(code, "221") != 0) {
+		printf("Error: wrong code received!");
+		return -1;
+	}
+
 	return 1;
 }
 
 int ftpRead(struct ftp_data *ftpData, char *str, size_t size) {
-/*	FILE *file = fdopen(ftpData->controlSocketFd, "r");
-
-	printf("str = %s, size = %zu\n", str, size);
+	FILE *file = fdopen(ftpData->controlSocketFd, "r");
 
 	if(fgets(str, size, file) == NULL)
 		return -1;
-
-	printf("Str: %s\n", str);
-
-	return 1;*/
-
-	FILE* fp = fdopen(ftpData->controlSocketFd, "r");
-
-	do {
-		memset(str, 0, size);
-		str = fgets(str, size, fp);
-		printf("%s", str);
-	} while (!('1' <= str[0] && str[0] <= '5') || str[3] != ' ');
 
 	return 1;
 }
