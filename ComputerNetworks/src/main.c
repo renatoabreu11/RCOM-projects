@@ -20,6 +20,14 @@ int main(int argc, char *argv[])
         printf("Invalid URL. URL format: scheme:[//[user:password@]host[:port]][/]path");
         exit(1);
     }
+
+    if(parsedUrl->password == NULL){
+        char input[50]; 
+        printf("Anonymous Mode. Enter your password (fe.up.pt personal mail):\n");
+        fgets(input, 50, stdin);
+        parsedUrl->password = malloc(strlen(input));
+        strncat(parsedUrl->password, input, strlen(input) - 1);
+    }
     printParsedUrl(parsedUrl);
 
     struct ftp_data *ftp =  malloc(sizeof(struct ftp_data)); 
