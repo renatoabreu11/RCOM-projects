@@ -90,3 +90,12 @@ int ftpRead(struct ftp_data *ftpData, char *str, size_t size) {
 
 	return 1;
 }
+
+int ftpSendMessage(struct ftp_data * ftpData, char *str){
+	int strLength = strlen(str);
+	
+	if(write(ftpData->controlSocketFd, str, strLength) != strLength){
+		printf("%s\n", "Error writing to ftp server");
+		return -1;
+	} else return 1;
+}
