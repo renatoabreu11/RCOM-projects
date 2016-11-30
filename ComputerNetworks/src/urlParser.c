@@ -149,6 +149,8 @@ struct parsed_url * parse_url(const char *url)
             return NULL;
         }
         curstr++;
+    }else{
+        purl->username = "anonymous";
     }
 
     if ( '[' == *curstr ) {

@@ -31,7 +31,8 @@ int connectSocket(struct ftp_data *ftp, const char *ip, int port){
 int ftpConnect(struct ftp_data *ftp, const char *ip, int port){
 	if(connectSocket(ftp, ip, port) == -1)
 		return -1;
-
+	printf("A prima do ze e toda boua\n");
+	printf("%d\n", ftp->controlSocketFd);
 	char str[1024];
 	if(ftpRead(ftp, str, sizeof(str)) == -1) {
 		printf("Couldn't connect'");

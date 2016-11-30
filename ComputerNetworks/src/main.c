@@ -15,10 +15,16 @@ int main(int argc, char *argv[])
     }
 
     // Parse the url 
-	struct parsed_url * parsedUrl = parse_url("ftp://username:password@server.com:8000/public_html/test/");
+	struct parsed_url * parsedUrl = parse_url(argv[1]);
     if(parsedUrl == NULL){
         printf("Invalid URL. URL format: scheme:[//[user:password@]host[:port]][/]path");
         exit(1);
+    }
+
+    if(parsedUrl->password == NULL){
+        printf("Anonymous Mode. Enter your password (fe.up.pt personal mail):\n");
+        parsedUrl->password = malloc(100);
+        fgets(parsedUrl->password, 100, stdin);
     }
     printParsedUrl(parsedUrl);
 
