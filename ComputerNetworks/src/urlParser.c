@@ -199,6 +199,8 @@ struct parsed_url * parse_url(const char *url)
         port[len] = '\0';
         purl->port = atoi(port);
         curstr = tmpstr;
+    }else{
+        purl->port = 21;
     }
 
     /* End of the string */
@@ -256,9 +258,7 @@ void printParsedUrl(struct parsed_url *purl){
         if ( NULL != purl->host ) {
             printf("Host: %s\n", purl->host);
         }
-        if ( 0 != purl->port ) {
-            printf("Port: %d\n", purl->port);
-        }
+        printf("Port: %d\n", purl->port);
         if ( NULL != purl->path ) {
             printf("Path: %s\n", purl->path);
         }
