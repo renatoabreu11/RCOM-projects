@@ -36,18 +36,38 @@ int main(int argc, char *argv[])
     if(ftpConnect(ftp, parsedUrl->ip, parsedUrl->port) != 1){
         printf("Error estabilishing server connection!\n");
         exit(1);
-    }else printf("Successfull connection to server!\n");
+    }
+
+    printf("Successfull connection to server!\n");
 
     // Authentication
     if(ftpLogin(ftp, parsedUrl->username, parsedUrl->password) != 1){
         printf("Authentication failure!\n");
         exit(1);
-    }else printf("Successfull Authentication to server!\n");
+    }
+
+    printf("Successfull Authentication to server!\n");
 
     if(ftpSetPassiveMode(ftp) == -1) {
         printf("Error setting passive mode!\n");
         return -1;
     }
+
+    printf("Passive mode set!\n");
+
+    if(ftpDownload(ftp, parsedUrl->path, parsedUrl->filename) == -1) {
+        printf("Error downloading file!\n");
+        return -1;
+    }
+
+    printf("File downloaded and saved!\n");
+
+    if(ftpLogout(ftp) == -1) {
+        printf("Error disconnecting from server!\n");
+        return -1;
+    }
+
+    printf("Logged out!\n");
 
     freeUrlStruct(parsedUrl);
 

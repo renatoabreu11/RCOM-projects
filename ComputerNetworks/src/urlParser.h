@@ -22,6 +22,7 @@ struct parsed_url {
     char *username;             /* optional */
     char *password;             /* optional */
     char *ip;
+    char *filename;
 };
 
 struct parsed_url * parse_url(const char *);

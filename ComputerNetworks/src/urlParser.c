@@ -36,6 +36,7 @@ struct parsed_url * parse_url(const char *url)
     purl->username = NULL;
     purl->password = NULL;
     purl->ip = NULL;
+    purl->filename = NULL;
 
     curstr = url;
 
@@ -238,6 +239,16 @@ struct parsed_url * parse_url(const char *url)
     return purl;
 }
 
+    /*char keys[] = "/";
+    char *pch;
+    pch = strpbrk (path, keys);
+    while (pch != NULL)
+    {
+        printf ("%c " , *pch);
+        pch = strpbrk (pch+1,keys);
+    }
+*/
+
 int hostToIP(struct parsed_url *purl){
     	struct hostent *h;      
 
@@ -261,6 +272,9 @@ void printParsedUrl(struct parsed_url *purl){
         printf("Port: %d\n", purl->port);
         if ( NULL != purl->path ) {
             printf("Path: %s\n", purl->path);
+        }
+        if ( NULL != purl->filename ) {
+            printf("Filename: %s\n", purl->filename);
         }
         if ( NULL != purl->username ) {
             printf("Username: %s\n", purl->username);
@@ -288,6 +302,9 @@ void freeUrlStruct(struct parsed_url *purl)
         }
         if ( NULL != purl->path ) {
             free(purl->path);
+        }
+        if ( NULL != purl->filename ) {
+           free(purl->filename);
         }
         free(purl);
     }

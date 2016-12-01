@@ -100,7 +100,7 @@ int ftpSetPassiveMode(struct ftp_data *ftp){
 		return -1;	
 	}
 
-	printf("Passive message = %s\n", message);
+	printf("Passive message = %s", message);
 
 	//Parses the message received
 	int ipPart1, ipPart2, ipPart3, ipPart4, portPart1, portPart2;
@@ -124,21 +124,51 @@ int ftpSetPassiveMode(struct ftp_data *ftp){
 /*
  * Send the RETR command with the file path
  */
-int ftpDownload(struct ftp_data *ftpData, const char *path){
+int ftpDownload(struct ftp_data *ftp, const char *path, const char *filename){
+	char message[1024];
+	char response[1024];
+
+	sprintf(message, "RETR %s\r\n", path);
+
+	if(ftpSendMessage(ftp, message) == -1)
+		return -1;
+	if(ftpRead(ftp, response, sizeof(response), RETRIEVE) == -1) {
+		printf("Error: %s!", response);
+		return -1;
+	}
+	printf("%s", response);
+
+	FILE *file = fopen(filename, "wb");
+
+	int bytesRead;
+	memset(message, 0, sizeof(message));
+	while((bytesRead = read(ftp->dataSocketFd, message, sizeof message)) > 0){
+		fwrite(message, 1, bytesRead, file);
+	}
+	//up201403377@fe.up.pt
+
+	fclose(file);
+
+	memset(response, 0, sizeof(response));
+	if(ftpRead(ftp, response, sizeof(response), FILE_RECEIVED) == -1) {
+		printf("Error: %s!", response);
+		return -1;
+	}
+	printf("%s", response);
 	return 1;
 }
 
 /*
  * Send the QUIT command and wait for reply (221)
  */ 
-int ftpLogout(struct ftp_data *ftpData){
+int ftpLogout(struct ftp_data *ftp){
 	char message[1024];
 	char response[1024];
 
 	sprintf(message, "QUIT\r\n");
-	if(ftpSendMessage(ftpData, message) == -1)
+	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
-	if(ftpRead(ftpData, response, sizeof(response), CONNECTION_CLOSED)) {
+	if(ftpRead(ftp, response, sizeof(response), CONNECTION_CLOSED) == -1) {
 		printf("Error: %s!", response);
 		return -1;
 	}
@@ -147,8 +177,8 @@ int ftpLogout(struct ftp_data *ftpData){
 	return 1;
 }
 
-int ftpRead(struct ftp_data *ftpData, char *str, size_t size, int expectedCode) {
-	FILE *file = fdopen(ftpData->controlSocketFd, "r");
+int ftpRead(struct ftp_data *ftp, char *str, size_t size, int expectedCode) {
+	FILE *file = fdopen(ftp->controlSocketFd, "r");
 	char code[4];
 	int codeInt;
 	do{
@@ -167,10 +197,10 @@ int ftpRead(struct ftp_data *ftpData, char *str, size_t size, int expectedCode) 
 	return 1;
 }
 
-int ftpSendMessage(struct ftp_data * ftpData, char *str){
+int ftpSendMessage(struct ftp_data * ftp, char *str){
 	int strLength = strlen(str);
 	
-	if(write(ftpData->controlSocketFd, str, strLength) != strLength){
+	if(write(ftp->controlSocketFd, str, strLength) != strLength){
 		printf("%s\n", "Error writing to ftp server");
 		return -1;
 	}
