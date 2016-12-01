@@ -244,16 +244,6 @@ struct parsed_url * parse_url(const char *url)
     return purl;
 }
 
-    /*char keys[] = "/";
-    char *pch;
-    pch = strpbrk (path, keys);
-    while (pch != NULL)
-    {
-        printf ("%c " , *pch);
-        pch = strpbrk (pch+1,keys);
-    }
-*/
-
 int hostToIP(struct parsed_url *purl){
     	struct hostent *h;      
 

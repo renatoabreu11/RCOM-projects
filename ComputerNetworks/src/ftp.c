@@ -145,7 +145,6 @@ int ftpDownload(struct ftp_data *ftp, const char *path, const char *filename){
 	while((bytesRead = read(ftp->dataSocketFd, message, sizeof message)) > 0){
 		fwrite(message, 1, bytesRead, file);
 	}
-	//up201403377@fe.up.pt
 
 	fclose(file);
 
