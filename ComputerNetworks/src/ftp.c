@@ -58,7 +58,7 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 
 	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
-	if(ftpRead(ftp, response, strlen(response), VALID_USER) == -1) {
+	if(ftpRead(ftp, response, sizeof(response), VALID_USER) == -1) {
 		printf("Error: %s!", response);
 		return -1;
 	}
