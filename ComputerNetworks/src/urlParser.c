@@ -231,6 +231,11 @@ struct parsed_url * parse_url(const char *url)
     purl->path[len] = '\0';
     curstr = tmpstr;
 
+    char * pch;
+    pch=strrchr(purl->path,'/');
+    purl->filename = malloc(strlen(pch) - 1);
+    memmove(purl->filename, pch + 1, strlen(pch) - 1);
+
     if(hostToIP(purl) == -1){
         freeUrlStruct(purl);
         return NULL;
