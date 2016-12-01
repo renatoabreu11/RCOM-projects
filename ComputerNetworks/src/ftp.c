@@ -96,18 +96,22 @@ int ftpSetPassiveMode(struct ftp_data *ftp){
 
 	memset(message, 0, sizeof(message));
 	if(ftpRead(ftp, message, sizeof(message), PASSIVE) == -1) {
-		printf("Error: couldn't read the server's response on PASV!");
+		printf("Error: %s\n", message);
 		return -1;	
 	}
 
+	printf("Passive message = %s\n", message);
+
 	//Parses the message received
 	int ipPart1, ipPart2, ipPart3, ipPart4, portPart1, portPart2;
-	sscanf(message, "%d %d %d %d %d %d", &ipPart1, &ipPart2, &ipPart3, &ipPart4, &portPart1, &portPart2);
+	sscanf(message, "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)", &ipPart1, &ipPart2, &ipPart3, &ipPart4, &portPart1, &portPart2);
 
 	//Builds IP
 	sprintf(ip, "%d.%d.%d.%d", ipPart1, ipPart2, ipPart3, ipPart4);
 	//Builds Port
 	port = portPart1 * 256 + portPart2;
+
+	printf("IP = %s, port = %d\n", ip, port);
 
 	if((ftp->dataSocketFd = connectSocket(ftp, ip, port)) == -1) {
 		printf("Error: couldn't connect to socket on PASV\n");
@@ -159,6 +163,7 @@ int ftpRead(struct ftp_data *ftpData, char *str, size_t size, int expectedCode) 
 	if(expectedCode != 0 && codeInt != expectedCode){
 		return -1;
 	}
+
 	return 1;
 }
 
