@@ -30,7 +30,7 @@ int connectSocket(struct ftp_data *ftp, const char *ip, int port){
  * Receive a reply from the ftp server (code : 220).
  */
 int ftpConnect(struct ftp_data *ftp, const char *ip, int port){	
-	if(connectSocket(ftp, ip, port) == -1)
+	if((ftp->controlSocketFd = connectSocket(ftp, ip, port)) == -1)
 		return -1;
 
 	char response[1024];
@@ -66,13 +66,13 @@ int ftpLogin(struct ftp_data *ftp, const char *username, const char *password){
 
 	/********** Sends PASS **********/
 	
-	memset(response, 0, strlen(response));
+	memset(response, 0, sizeof(response));
 	sprintf(message, "PASS %s\r\n", password);
 	printf("%s", message);
 
 	if(ftpSendMessage(ftp, message) == -1)
 		return -1;
-	if(ftpRead(ftp, response, strlen(response), LOGGED_IN) == -1) {
+	if(ftpRead(ftp, response, sizeof(response), LOGGED_IN) == -1) {
 		printf("Error: %s!", response);
 		return -1;
 	}
