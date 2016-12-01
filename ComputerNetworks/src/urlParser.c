@@ -289,12 +289,6 @@ void freeUrlStruct(struct parsed_url *purl)
         if ( NULL != purl->path ) {
             free(purl->path);
         }
-        if ( NULL != purl->username ) {
-            free(purl->username);
-        }
-        if ( NULL != purl->password ) {
-            free(purl->password);
-        }
         free(purl);
     }
 }

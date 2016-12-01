@@ -110,7 +110,7 @@ int ftpSetPassiveMode(struct ftp_data *ftp){
 	port = portPart1 * 256 + portPart2;
 
 	if((ftp->dataSocketFd = connectSocket(ftp, ip, port)) == -1) {
-		printf("Error: couldn't connect to socket on PASV");
+		printf("Error: couldn't connect to socket on PASV\n");
 		return -1;
 	}
 

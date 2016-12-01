@@ -44,6 +44,11 @@ int main(int argc, char *argv[])
         exit(1);
     }else printf("Successfull Authentication to server!\n");
 
+    if(ftpSetPassiveMode(ftp) == -1) {
+        printf("Error setting passive mode!\n");
+        return -1;
+    }
+
     freeUrlStruct(parsedUrl);
 
     return 1;
