@@ -154,6 +154,7 @@ int ftpDownload(struct ftp_data *ftp, const char *path, const char *filename){
 		return -1;
 	}
 	printf("%s", response);
+	close(ftp->dataSocketFd);
 	return 1;
 }
 
@@ -172,7 +173,7 @@ int ftpLogout(struct ftp_data *ftp){
 		return -1;
 	}
 	printf("%s", response);
-
+	close(ftp->controlSocketFd);
 	return 1;
 }
 
